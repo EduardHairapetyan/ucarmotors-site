@@ -1,0 +1,56 @@
+---
+/**
+ * Small inline-SVG country flags for the language switcher. SVG, not emoji —
+ * Windows renders flag emoji as bare letter pairs, and these need to look the
+ * same on every platform.
+ *
+ * hy → Armenia, ru → Russia, en → United Kingdom (the conventional mark for
+ * "English" on a multilingual site).
+ */
+interface Props {
+  code: 'hy' | 'ru' | 'en';
+  /** Rendered width in px; height follows the 3:2 ratio. */
+  size?: number;
+  class?: string;
+}
+const { code, size = 18, class: className = '' } = Astro.props;
+
+// Union Jack uses clip paths; ids must be unique when the flag renders twice.
+const uid = `fl-${Math.random().toString(36).slice(2, 8)}`;
+
+const wrap = `inline-block shrink-0 rounded-[2px] ring-1 ring-black/10 ${className}`;
+const w = size;
+const h = Math.round((size * 2) / 3);
+---
+
+{code === 'hy' && (
+  <svg width={w} height={h} viewBox="0 0 3 2" class={wrap} role="img" aria-hidden="true">
+    <rect width="3" height="2" fill="#F2A800" />
+    <rect width="3" height="1.333" fill="#0033A0" />
+    <rect width="3" height="0.667" fill="#D90012" />
+  </svg>
+)}
+
+{code === 'ru' && (
+  <svg width={w} height={h} viewBox="0 0 3 2" class={wrap} role="img" aria-hidden="true">
+    <rect width="3" height="2" fill="#D52B1E" />
+    <rect width="3" height="1.333" fill="#0039A6" />
+    <rect width="3" height="0.667" fill="#fff" />
+  </svg>
+)}
+
+{code === 'en' && (
+  <svg width={w} height={h} viewBox="0 0 60 40" class={wrap} role="img" aria-hidden="true">
+    <clipPath id={`${uid}-a`}><path d="M0 0h60v40H0z" /></clipPath>
+    <clipPath id={`${uid}-b`}>
+      <path d="M30 20h30v20zv20H0zH0V0zV0h30z" />
+    </clipPath>
+    <g clip-path={`url(#${uid}-a)`}>
+      <path d="M0 0h60v40H0z" fill="#012169" />
+      <path d="M0 0l60 40m0-40L0 40" stroke="#fff" stroke-width="8" />
+      <path d="M0 0l60 40m0-40L0 40" clip-path={`url(#${uid}-b)`} stroke="#C8102E" stroke-width="5" />
+      <path d="M30 0v40M0 20h60" stroke="#fff" stroke-width="13" />
+      <path d="M30 0v40M0 20h60" stroke="#C8102E" stroke-width="8" />
+    </g>
+  </svg>
+)}

@@ -3,6 +3,7 @@ import { localePath, useTranslations, stripLocale, type Lang } from '../i18n/uti
 import { languages, locales } from '../i18n/ui';
 import Icon from './Icon.astro';
 import Logo from './Logo.astro';
+import Flag from './Flag.astro';
 
 interface Props { lang: Lang }
 const { lang } = Astro.props;
@@ -51,7 +52,7 @@ const nav = [
           aria-label={t('lang.label')}
           class="flex items-center gap-1.5 cursor-pointer select-none -mx-1 px-1 py-3 md:py-1.5 text-ink-2 hover:text-ink transition-colors"
         >
-          <Icon name="globe" size={15} />
+          <Flag code={lang} size={18} />
           <span class="font-data text-[0.6875rem] tracking-[0.12em] uppercase text-ink">{lang}</span>
           <Icon name="chevron-down" size={12} class="lang-caret transition-transform" />
         </summary>
@@ -64,12 +65,13 @@ const nav = [
                 lang={code}
                 aria-current={code === lang ? 'true' : undefined}
                 class:list={[
-                  'flex items-center justify-between gap-3 px-3.5 py-2 text-sm no-underline transition-colors',
+                  'flex items-center gap-2.5 px-3.5 py-2 text-sm no-underline transition-colors',
                   code === lang ? 'text-ink' : 'text-ink-2 hover:text-ink hover:bg-mist',
                 ]}
               >
+                <Flag code={code} size={18} />
                 <span>{languages[code]}</span>
-                <span class="font-data text-[0.625rem] tracking-[0.12em] uppercase text-ink-2">{code}</span>
+                <span class="ml-auto font-data text-[0.625rem] tracking-[0.12em] uppercase text-ink-2">{code}</span>
               </a>
             </li>
           ))}
