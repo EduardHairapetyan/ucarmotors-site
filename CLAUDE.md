@@ -82,6 +82,23 @@ Content is edited in production via Sveltia CMS (`public/admin/`), GitHub-backed
   drives the fleet-relative range bar.
 - **`src/layouts/Base.astro`.** Builds `<head>`, canonical + hreflang alternates,
   and the schema.org `@graph` (AutoDealer always; pages pass extra `schema`).
+- **`/preview/` — the design proposals.** Five alternative art directions of
+  the whole site live in `src/designs/<id>/` (`plinth`, `stockbook`,
+  `daylight`, `highway`, `overnight`), listed in `src/designs/registry.ts` and
+  wired to components in `src/designs/index.ts`. They are served from a
+  separate route tree, `/preview/<design>/<locale>/…` (5 route files under
+  `src/pages/preview/`), which is `noindex` and filtered out of the sitemap;
+  the live routes are untouched. Links inside a design must use
+  `previewPath()`, not `localePath()`, or a click drops the visitor out of the
+  design being previewed. Each design owns its `Shell`, `Home` and `Card` plus
+  a `theme.css` that redefines the global tokens under `[data-design="<id>"]`;
+  the car, financing and contact pages are shared markup
+  (`src/components/preview/`) that each design re-skins through those tokens
+  and the `.chip` / `.panel` / `.frame` surfaces in `src/styles/preview.css`.
+  Note that a design's unlayered CSS beats Tailwind utilities — a rule setting
+  `display` will override `hidden`. Choosing one means deleting the other four
+  folders, their registry entries, and folding the winner into
+  `src/components/views/`.
 - **No contact forms.** The site has no lead/enquiry form and no `/api/lead`
   function — the client asked for every "request a call / test drive / info"
   path removed. Contact is display-only: phone, WhatsApp, email, address, map,

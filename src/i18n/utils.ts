@@ -31,6 +31,20 @@ export function asset(path: string): string {
   return BASE + '/' + path.replace(/^\/+/, '');
 }
 
+/**
+ * Href inside the design-preview tree: `/preview/<design>/<locale>/<path>`.
+ *
+ * The preview tree deliberately does *not* follow the production URL shape —
+ * hy is prefixed here like every other locale, so one `getStaticPaths` covers
+ * all three without branching. Every link rendered by a design component must
+ * go through this, or the first click drops the visitor out of the design
+ * they are previewing and back onto the live site.
+ */
+export function previewPath(design: string, lang: Lang, path = '/'): string {
+  const clean = path.replace(/^\/+|\/+$/g, '');
+  return `${BASE}/preview/${design}/${lang}${clean ? `/${clean}` : ''}`;
+}
+
 /** Strip the deploy base and the locale prefix, leaving a bare path like
  *  `/cars` — the form `localePath` expects back. */
 export function stripLocale(pathname: string): string {

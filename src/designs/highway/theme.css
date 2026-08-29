@@ -1,0 +1,141 @@
+/*
+ * HIGHWAY SIGN — you are a building on the Yerevan–Sevan highway; behave
+ * like one.
+ *
+ * Built from type, colour and direction rather than from photographs, which
+ * makes it the only direction that looks exactly as good today, with twelve
+ * borrowed stand-in images, as it will after Ucar shoot their own stock.
+ *
+ * Two rules hold it up:
+ *   1. The gradient appears exactly ONCE per page, as the sign face.
+ *   2. White type never sits over the cyan end. The field runs violet → blue
+ *      → cyan and the headline occupies the violet half, with a scrim under
+ *      it, so contrast holds in all three scripts (Armenian sets ~18% wider
+ *      and reaches further across the field than English does).
+ * No condensed face anywhere: Noto Sans Armenian has no condensed cut, and
+ * a width-led concept would collapse the moment the site is read in hy.
+ */
+
+[data-design='highway'] {
+  --font-sans: 'Golos Text Variable', 'Noto Sans Armenian Variable', system-ui, sans-serif;
+  --font-data: 'JetBrains Mono Variable', 'Noto Sans Armenian Variable', ui-monospace, monospace;
+  --font-display: 'Geologica Variable', 'Noto Sans Armenian Variable', system-ui, sans-serif;
+
+  --color-wash: #EDF0FE;
+  --color-line: #DCE0E8;
+
+  --sign: linear-gradient(115deg, #7C3AED 0%, #5B5BF0 34%, #3B82F6 62%, #1FD1C1 100%);
+
+  background: #fff;
+}
+
+[data-design='highway'] body { background: #fff; }
+
+[data-design='highway'] .display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 0.94;
+  text-transform: uppercase;
+}
+/* Noto Sans Armenian tops out at 700 and has no true uppercase distinction;
+   at 800/uppercase the hy headline would bloom and lose its counters. It
+   keeps the same optical size and gets its authority from scale instead. */
+[data-design='highway'] :lang(hy) .display {
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  line-height: 1.02;
+  text-transform: none;
+}
+
+[data-design='highway'] h1,
+[data-design='highway'] h2,
+[data-design='highway'] h3 { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.03em; }
+
+[data-design='highway'] .label {
+  font-family: var(--font-data);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-ink-2);
+}
+[data-design='highway'] :lang(hy) .label { letter-spacing: 0.08em; }
+
+/* ---- the sign face --------------------------------------------------- */
+
+[data-design='highway'] .sign { position: relative; background: var(--sign); }
+/* The scrim is what makes the contrast promise keepable regardless of where
+   a translated headline ends up on the field. */
+[data-design='highway'] .sign::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgb(12 13 15 / 0.30) 0%, rgb(12 13 15 / 0.14) 55%, transparent 100%);
+  pointer-events: none;
+}
+[data-design='highway'] .sign > * { position: relative; z-index: 1; }
+
+/* ---- the index ------------------------------------------------------- */
+
+[data-design='highway'] .idx {
+  position: relative;
+  display: grid;
+  grid-template-columns: 5rem 1fr auto;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--color-line);
+  overflow: hidden;
+  transition: color 160ms ease;
+}
+@media (max-width: 48rem) {
+  [data-design='highway'] .idx { grid-template-columns: 3.5rem 1fr; gap: 1rem; padding: 1.125rem 0; }
+  [data-design='highway'] .idx-money { grid-column: 2; justify-self: start; }
+}
+
+/* On hover the car's own photograph bleeds in behind its type — the picture
+   is a secondary detail here, never the primary object. */
+[data-design='highway'] .idx-bleed {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: 50% 45%;
+  opacity: 0;
+  transition: opacity 260ms ease;
+  pointer-events: none;
+}
+[data-design='highway'] .idx:hover .idx-bleed,
+[data-design='highway'] .idx:focus-within .idx-bleed { opacity: 0.13; }
+
+[data-design='highway'] .idx-brand {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-ink-2);
+}
+[data-design='highway'] .idx-model {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.375rem, 3.4vw, 2.25rem);
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+}
+[data-design='highway'] .idx-money {
+  font-family: var(--font-data);
+  font-size: clamp(0.875rem, 1.6vw, 1.125rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+[data-design='highway'] .chip { border-radius: 0; letter-spacing: 0.16em; border-color: var(--color-line); }
+[data-design='highway'] .chip.is-on { background: var(--color-ink); border-color: var(--color-ink); }
+[data-design='highway'] .panel { background: var(--color-wash); box-shadow: none; }
+[data-design='highway'] .frame { box-shadow: inset 0 0 0 1px var(--color-line); }
+
+/* One orchestrated reveal on load, on the sign only. */
+@keyframes highway-in { from { opacity: 0; transform: translateY(0.6em); } to { opacity: 1; transform: none; } }
+[data-design='highway'].js .sign-in > * { animation: highway-in 760ms cubic-bezier(0.16, 1, 0.3, 1) both; animation-delay: var(--d, 0ms); }

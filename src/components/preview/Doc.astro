@@ -1,0 +1,78 @@
+---
+/**
+ * The HTML document every preview page shares.
+ *
+ * Deliberately thin: charset, title, the review bar, and the scroll-reveal
+ * observer. No canonical, no hreflang, no JSON-LD — preview pages are noindex
+ * and must not compete with the live site or leak an unverified price into
+ * structured data. Each design supplies its own header and footer through the
+ * named slots, and its own stylesheet through the `data-design` hook.
+ */
+import DesignBar from './DesignBar.astro';
+import { asset, type Lang } from '../../i18n/utils';
+import { htmlLang } from '../../i18n/ui';
+
+interface Props {
+  design: string;
+  lang: Lang;
+  /** Bare path within the site — the design bar keeps it when you switch. */
+  path: string;
+  title: string;
+  description: string;
+}
+
+const { design, lang, path, title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang={htmlLang[lang]} data-design={design}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title} · Ucar Motors · {design}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href={asset('/favicon.svg')} type="image/svg+xml" />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+  </head>
+
+  <body>
+    <DesignBar design={design} lang={lang} path={path} />
+    <slot name="header" />
+    <main id="main" class="flex-1"><slot /></main>
+    <slot name="footer" />
+
+    <script>
+      const els = document.querySelectorAll<HTMLElement>('[data-reveal]');
+      const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (still || !('IntersectionObserver' in window)) {
+        els.forEach((el) => el.classList.add('is-visible'));
+      } else {
+        // Anything already on screen is shown outright. A scroll-reveal is for
+        // content you scroll to; running it on the first band means the top of
+        // the page is briefly blank, and the observer can be slow to settle
+        // while lazy images are still changing the layout under it.
+        const pending: HTMLElement[] = [];
+        for (const el of els) {
+          if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('is-visible');
+          else pending.push(el);
+        }
+
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (!e.isIntersecting) continue;
+              e.target.classList.add('is-visible');
+              io.unobserve(e.target);
+            }
+          },
+          // threshold 0: a tall band only ever shows a thin slice before it
+          // should appear, and a ratio threshold would hold it back.
+          { rootMargin: '0px 0px -6% 0px', threshold: 0 }
+        );
+        pending.forEach((el) => io.observe(el));
+      }
+    </script>
+  </body>
+</html>

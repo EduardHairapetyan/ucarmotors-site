@@ -1,0 +1,115 @@
+---
+/**
+ * The comparison bar. Fixed to the top of every preview page so the five
+ * directions are one click apart, and so it is always obvious that what you
+ * are looking at is a proposal rather than the live site.
+ *
+ * It keeps the current page and locale when you switch, so you can put two
+ * designs side by side on the same car and judge the thing that differs.
+ */
+import { designs } from '../../designs/registry';
+import { previewPath, localePath, type Lang } from '../../i18n/utils';
+import { locales } from '../../i18n/ui';
+
+interface Props {
+  design: string;
+  lang: Lang;
+  /** Bare path within the site, e.g. '/cars' or '/cars/zeekr-001'. */
+  path: string;
+}
+
+const { design, lang, path } = Astro.props;
+const current = designs.find((d) => d.id === design);
+const index = designs.findIndex((d) => d.id === design) + 1;
+---
+
+<div class="dbar">
+  <div class="dbar-in">
+    <span class="dbar-tag">
+      <b>{String(index).padStart(2, '0')}</b>
+      <span class="dbar-name">{current?.name}</span>
+      <span class="dbar-note">{current?.tagline}</span>
+    </span>
+
+    <nav class="dbar-list" aria-label="Design proposals">
+      {designs.map((d, i) => (
+        <a
+          href={previewPath(d.id, lang, path)}
+          aria-current={d.id === design ? 'true' : undefined}
+          title={`${d.name} — ${d.tagline}`}
+        >{String(i + 1).padStart(2, '0')}</a>
+      ))}
+    </nav>
+
+    <nav class="dbar-lang" aria-label="Language">
+      {locales.map((code) => (
+        <a href={previewPath(design, code, path)} hreflang={code} aria-current={code === lang ? 'true' : undefined}>
+          {code}
+        </a>
+      ))}
+    </nav>
+
+    <a class="dbar-home" href={localePath('hy', '/preview')}>All designs</a>
+  </div>
+</div>
+
+<style>
+  /* Deliberately outside the design's own token system — this chrome belongs
+     to the review tool, not to any proposal, so it must not read as part of
+     whichever design is on screen. Fixed dark bar, one look everywhere. */
+  .dbar {
+    position: sticky;
+    top: 0;
+    z-index: 90;
+    background: #0B0C10;
+    color: #fff;
+    font-family: ui-monospace, "JetBrains Mono Variable", monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+  .dbar-in {
+    width: 100%;
+    max-width: 84rem;
+    margin-inline: auto;
+    padding: 0 1.25rem;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .dbar a { color: #fff; text-decoration: none; }
+
+  .dbar-tag { display: flex; align-items: baseline; gap: 0.5rem; min-width: 0; }
+  .dbar-tag b { color: #7DE3D8; font-weight: 700; }
+  .dbar-name { text-transform: uppercase; font-weight: 600; white-space: nowrap; }
+  .dbar-note {
+    color: #8A9099;
+    text-transform: none;
+    letter-spacing: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  @media (max-width: 60rem) { .dbar-note { display: none; } }
+  /* On a phone the number is enough to say which proposal you are looking at;
+     a half-truncated name is worse than none. */
+  @media (max-width: 34rem) { .dbar-name { display: none; } }
+
+  .dbar-list { display: flex; gap: 2px; margin-left: auto; }
+  .dbar-list a {
+    padding: 4px 9px;
+    background: #1A1C22;
+    color: #8A9099;
+    transition: background-color 120ms ease, color 120ms ease;
+  }
+  .dbar-list a:hover { background: #2A2D36; color: #fff; }
+  .dbar-list a[aria-current] { background: #fff; color: #0B0C10; font-weight: 700; }
+
+  .dbar-lang { display: flex; gap: 8px; padding-left: 0.75rem; border-left: 1px solid #2A2D36; }
+  .dbar-lang a { color: #8A9099; text-transform: uppercase; }
+  .dbar-lang a[aria-current] { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+
+  .dbar-home { color: #8A9099 !important; white-space: nowrap; }
+  .dbar-home:hover { color: #fff !important; }
+  @media (max-width: 48rem) { .dbar-home { display: none; } }
+</style>

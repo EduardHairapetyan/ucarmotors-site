@@ -1,0 +1,102 @@
+---
+/**
+ * Catalogue page body, shared by every design preview.
+ *
+ * The grid and the card are the design's own — both come in as props — so a
+ * direction can be a three-up gallery, a dense two-column table, or a single
+ * stacked column without this file knowing. Everything else (the filter
+ * behaviour, the count, the empty state) is identical, because it is
+ * behaviour rather than art direction.
+ */
+import { getEntry } from 'astro:content';
+import { getCars, maxRange, brandsOf } from '../../lib/catalog';
+import { useTranslations, type Lang } from '../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  design: string;
+  /** The design's own card component. Rendered once per car. */
+  Card: any;
+  /** Tailwind classes for the grid wrapper — the design's shelf layout. */
+  gridClass?: string;
+}
+
+const { lang, design, Card, gridClass = 'grid gap-5 sm:grid-cols-2 lg:grid-cols-3' } = Astro.props;
+const t = useTranslations(lang);
+
+const site = (await getEntry('settings', 'site'))!.data;
+const cars = await getCars();
+const max = maxRange(cars);
+const brands = brandsOf(cars);
+---
+
+<section class="shell py-12 sm:py-16">
+  <div class="flex items-end justify-between gap-4 flex-wrap border-b border-line pb-5">
+    <h1 class="text-title">{t('cars.title')}</h1>
+    <p class="eyebrow text-ink-2"><span data-count>{cars.length}</span> {t('cars.count')}</p>
+  </div>
+
+  <!-- Filters are an enhancement: with JS off every car is already in the
+       DOM and visible, so the page still works. -->
+  <car-filter class="block mt-8">
+    <fieldset class="flex flex-wrap items-center gap-2 border-0 p-0 m-0">
+      <legend class="eyebrow text-ink-2 mb-3 w-full">{t('filter.brand')}</legend>
+      <button type="button" data-brand="" aria-pressed="true" class="chip is-on">{t('filter.all')}</button>
+      {brands.map((brand) => (
+        <button type="button" data-brand={brand} aria-pressed="false" class="chip">{brand}</button>
+      ))}
+    </fieldset>
+
+    <div class={`${gridClass} mt-8`} data-grid>
+      {cars.map((car, i) => (
+        <div data-car data-car-brand={car.data.brand}>
+          <Card car={car} lang={lang} design={design} financing={site.financing} maxRange={max} index={i} />
+        </div>
+      ))}
+    </div>
+
+    <p data-empty hidden class="mt-12 text-ink-2">{t('cars.empty')}</p>
+  </car-filter>
+</section>
+
+<script>
+  // Brand filter. Identical across designs — the chip *looks* different per
+  // design (`.chip` / `.chip.is-on` are themed in each design's CSS) but the
+  // state machine is the same, so only the class toggles here.
+  class CarFilter extends HTMLElement {
+    connectedCallback() {
+      const buttons = [...this.querySelectorAll<HTMLButtonElement>('[data-brand]')];
+      const cards = [...this.querySelectorAll<HTMLElement>('[data-car]')];
+      const empty = this.querySelector<HTMLElement>('[data-empty]');
+      const count = document.querySelector<HTMLElement>('[data-count]');
+
+      const apply = (brand: string) => {
+        let shown = 0;
+        for (const card of cards) {
+          const match = !brand || card.dataset.carBrand === brand;
+          card.hidden = !match;
+          if (match) shown++;
+        }
+        if (empty) empty.hidden = shown > 0;
+        if (count) count.textContent = String(shown);
+
+        for (const b of buttons) {
+          const on = b.dataset.brand === brand;
+          b.setAttribute('aria-pressed', String(on));
+          b.classList.toggle('is-on', on);
+        }
+
+        const url = new URL(location.href);
+        brand ? url.searchParams.set('brand', brand) : url.searchParams.delete('brand');
+        history.replaceState(null, '', url);
+      };
+
+      for (const b of buttons) b.addEventListener('click', () => apply(b.dataset.brand ?? ''));
+
+      const initial = new URL(location.href).searchParams.get('brand') ?? '';
+      if (initial && buttons.some((b) => b.dataset.brand === initial)) apply(initial);
+    }
+  }
+
+  if (!customElements.get('car-filter')) customElements.define('car-filter', CarFilter);
+</script>

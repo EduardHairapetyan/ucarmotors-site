@@ -1,0 +1,125 @@
+---
+/**
+ * DAYLIGHT home: an unpacking.
+ *
+ * Centred, generous, lit from behind by the brand gradient at 16% and 90px of
+ * blur. The hero car sits in its own card rather than bleeding to the edge —
+ * a product on a table, not a poster.
+ */
+import { getEntry } from 'astro:content';
+import Card from './Card.astro';
+import CarSilhouette from '../../components/CarSilhouette.astro';
+import Icon from '../../components/Icon.astro';
+import { getCars, getFeatured, maxRange, entryPrice, priceOf } from '../../lib/catalog';
+import { previewPath, asset, useTranslations, pick, formatAmd, monthlyPayment, type Lang } from '../../i18n/utils';
+
+interface Props { lang: Lang; design: string }
+const { lang, design } = Astro.props;
+const t = useTranslations(lang);
+
+const site = (await getEntry('settings', 'site'))!.data;
+const f = site.financing;
+const cars = await getCars();
+const featured = await getFeatured(3);
+const max = maxRange(cars);
+const entry = entryPrice(cars);
+
+const heroCar = entry?.car ?? featured[0]!;
+const heroPrice = entry?.price ?? priceOf(heroCar);
+const heroMonthly = heroPrice ? monthlyPayment(heroPrice, f.defaultDownPercent, f.defaultTermYears, f.ratePercent) : null;
+const heroName = `${heroCar.data.brand} ${heroCar.data.model}`;
+
+const services = [t('svc.sales'), t('svc.charging'), t('svc.warranty'), t('svc.service'), t('svc.financing')];
+---
+
+<section class="relative overflow-hidden">
+  <div class="spill -top-40 left-1/2 -translate-x-1/2 h-[34rem] w-[52rem]" aria-hidden="true"></div>
+
+  <div class="shell relative pt-14 pb-4 sm:pt-20 text-center">
+    <h1 class="rise text-[clamp(2rem,5.2vw,3.5rem)] leading-[1.06] max-w-[16ch] mx-auto">{t('hero.title')}</h1>
+    <p class="rise mt-5 text-lg leading-relaxed text-ink-2 max-w-[46ch] mx-auto" style="--d:90ms">{t('hero.lede')}</p>
+
+    <div class="rise mt-8 flex flex-wrap justify-center gap-3" style="--d:160ms">
+      <a href={previewPath(design, lang, '/cars')} class="pill pill-call">{t('nav.cars')}</a>
+      <a href={`tel:${site.phones[0].replace(/[^+\d]/g, '')}`} class="pill pill-ghost">
+        <Icon name="phone" size={15} />{t('cta.call')}
+      </a>
+    </div>
+
+    <!-- The hero car, presented as one object on a table. -->
+    <div class="rise card mt-14 p-3 sm:p-4 max-w-3xl mx-auto text-left" style="--d:240ms">
+      <a href={previewPath(design, lang, `/cars/${heroCar.id}`)} class="inset block aspect-[16/9] no-underline">
+        {heroCar.data.images.length > 0
+          ? <img src={asset(heroCar.data.images[0])} alt={heroName} width="960" height="540" class="w-full h-full object-cover" />
+          : <CarSilhouette body={heroCar.data.bodyType} class="w-full h-full" />}
+      </a>
+
+      <div class="flex flex-wrap items-center justify-between gap-4 px-3 sm:px-4 py-4">
+        <div>
+          <p class="text-xl font-bold tracking-[-0.03em]">{heroName}</p>
+          <p class:list={['status mt-1.5', heroCar.data.status === 'available' && 'status-available']}>
+            {t(`status.${heroCar.data.status}` as 'status.available')}
+          </p>
+        </div>
+
+        {heroMonthly !== null ? (
+          <span class="pill pill-money"><b>{formatAmd(heroMonthly, lang)}</b><span class="text-ink-2 font-medium">{t('calc.perMonth')}</span></span>
+        ) : (
+          <a href={`tel:${site.phones[0].replace(/[^+\d]/g, '')}`} class="pill pill-call">{t('cta.call')}</a>
+        )}
+      </div>
+    </div>
+
+    {heroCar.data.imageCredit && (
+      <p class="mt-3 text-[0.6875rem] text-ink-2">{heroCar.data.imageCredit}</p>
+    )}
+  </div>
+</section>
+
+<section class="shell pt-20" data-reveal>
+  <div class="flex items-end justify-between gap-4 flex-wrap">
+    <h2 class="text-[clamp(1.375rem,2.6vw,1.875rem)]">{t('cars.title')}</h2>
+    <a href={previewPath(design, lang, '/cars')} class="pill pill-ghost !min-h-[2.25rem] !text-sm">{t('cta.viewAll')} →</a>
+  </div>
+
+  <div class="grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3 mt-8">
+    {featured.map((car, i) => (
+      <Card car={car} lang={lang} design={design} financing={f} maxRange={max} index={i} />
+    ))}
+  </div>
+</section>
+
+<section class="shell pt-20" data-reveal>
+  <div class="panel relative overflow-hidden p-8 sm:p-12">
+    <div class="spill -bottom-40 -right-24 h-[24rem] w-[30rem]" aria-hidden="true"></div>
+    <div class="relative grid gap-10 lg:grid-cols-2 lg:gap-16 lg:items-center">
+      <div>
+        <p class="label">{t('about.eyebrow')}</p>
+        <h2 class="text-[clamp(1.375rem,2.6vw,1.875rem)] mt-3 max-w-[20ch]">{t('about.title')}</h2>
+        <p class="mt-4 leading-relaxed text-ink-2 max-w-[48ch]">{t('about.lede')}</p>
+      </div>
+      <ul class="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-1">
+        {services.map((s) => (
+          <li class="flex items-center gap-3 text-sm font-semibold">
+            <span class="inline-block h-1.5 w-1.5 rounded-full bg-charge-lift shrink-0"></span>{s}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="shell pt-8" data-reveal>
+  <div class="card p-8 sm:p-10 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
+    <div>
+      <h2 class="text-[clamp(1.375rem,2.6vw,1.875rem)] max-w-[18ch]">{t('contact.title')}</h2>
+      <p class="mt-3 text-ink-2 leading-relaxed max-w-[40ch]">{pick(site.address, lang)} · {pick(site.hours, lang)}</p>
+    </div>
+    <div class="flex flex-wrap gap-3">
+      <a href={previewPath(design, lang, '/contact')} class="pill pill-call">{t('nav.contact')}</a>
+      <a href={`https://wa.me/${site.whatsapp}`} rel="noopener" class="pill pill-ghost">
+        <Icon name="whatsapp" size={16} />WhatsApp
+      </a>
+    </div>
+  </div>
+</section>

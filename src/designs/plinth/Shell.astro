@@ -1,0 +1,119 @@
+---
+import '../../styles/global.css';
+import '../../styles/preview.css';
+import './theme.css';
+import '@fontsource-variable/noto-serif';
+import '@fontsource-variable/noto-serif-armenian';
+
+import Doc from '../../components/preview/Doc.astro';
+import Icon from '../../components/Icon.astro';
+import { previewPath, useTranslations, pick, type Lang } from '../../i18n/utils';
+import { getEntry } from 'astro:content';
+
+interface Props {
+  design: string;
+  lang: Lang;
+  path: string;
+  page: 'home' | 'cars' | 'financing' | 'contact' | 'car';
+  title?: string;
+}
+
+const { design, lang, path, page, title } = Astro.props;
+const t = useTranslations(lang);
+const site = (await getEntry('settings', 'site'))!.data;
+
+const TITLES = {
+  home: t('hero.title'),
+  cars: t('cars.title'),
+  financing: t('fin.title'),
+  contact: t('contact.title'),
+  car: title ?? '',
+} as const;
+
+const nav = [
+  { href: '/cars', label: t('nav.cars') },
+  { href: '/financing', label: t('nav.financing') },
+  { href: '/contact', label: t('nav.contact') },
+];
+---
+
+<Doc design={design} lang={lang} path={path} title={title ?? TITLES[page]} description={t('hero.lede')}>
+  <header slot="header" class="sticky top-[38px] z-30 bg-white/95 backdrop-blur">
+    <div class="shell flex items-center justify-between h-16 sm:h-20 gap-6">
+      <a href={previewPath(design, lang, '/')} class="no-underline">
+        <span class="font-[var(--font-display)] text-[1.0625rem] tracking-[0.01em]">Ucar Motors</span>
+      </a>
+
+      <nav aria-label="Main" class="hs flex items-center gap-5 sm:gap-8 overflow-x-auto">
+        {nav.map((item) => (
+          <a
+            href={previewPath(design, lang, item.href)}
+            aria-current={path === item.href ? 'page' : undefined}
+            class:list={[
+              'label no-underline whitespace-nowrap transition-colors hover:text-ink',
+              path === item.href && '!text-ink',
+            ]}
+          >{item.label}</a>
+        ))}
+      </nav>
+    </div>
+    <!-- The one gradient event on the page. -->
+    <div class="rail" data-rail><i></i></div>
+  </header>
+
+  <slot />
+
+  <footer slot="footer" class="bg-graphite text-white mt-24">
+    <div class="shell py-16 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="sm:col-span-2">
+        <p class="font-[var(--font-display)] text-2xl font-light">Ucar Motors</p>
+        <p class="mt-4 text-sm leading-relaxed text-white/55 max-w-[34ch]">{pick(site.address, lang)}</p>
+        <p class="mt-1 text-sm text-white/55">{pick(site.hours, lang)}</p>
+      </div>
+
+      <div>
+        <p class="label !text-white/40">{t('contact.phone')}</p>
+        <ul class="mt-3 space-y-1.5">
+          {site.phones.map((p) => (
+            <li><a href={`tel:${p.replace(/[^+\d]/g, '')}`} class="font-data text-sm no-underline text-white/85 hover:text-white">{p}</a></li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <p class="label !text-white/40">Ucar Motors</p>
+        <div class="mt-3 flex gap-3">
+          <a href={site.social.facebook} rel="noopener" aria-label="Facebook" class="text-white/60 hover:text-white"><Icon name="facebook" size={18} /></a>
+          <a href={site.social.instagram} rel="noopener" aria-label="Instagram" class="text-white/60 hover:text-white"><Icon name="instagram" size={18} /></a>
+          <a href={site.social.linkedin} rel="noopener" aria-label="LinkedIn" class="text-white/60 hover:text-white"><Icon name="linkedin" size={18} /></a>
+        </div>
+        <a href={`https://wa.me/${site.whatsapp}`} rel="noopener" class="inline-flex items-center gap-2 mt-5 text-sm no-underline text-white/85 hover:text-white">
+          <Icon name="whatsapp" size={16} />WhatsApp
+        </a>
+      </div>
+    </div>
+    <div class="shell pb-10 text-[0.6875rem] text-white/35">© {new Date().getFullYear()} Ucar Motors · {t('footer.rights')}</div>
+  </footer>
+</Doc>
+
+<script>
+  // Fill the rail in proportion to how far through the page you are. Written
+  // to a custom property so the paint stays on the compositor.
+  const rail = document.querySelector<HTMLElement>('[data-rail]');
+  if (rail) {
+    let ticking = false;
+    const update = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0;
+      rail.style.setProperty('--rail', `${pct}%`);
+      ticking = false;
+    };
+    addEventListener('scroll', () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(update);
+    }, { passive: true });
+    addEventListener('resize', update, { passive: true });
+    update();
+  }
+</script>

@@ -1,0 +1,74 @@
+---
+/**
+ * OVERNIGHT's tile. Conventional on purpose — the argument of this direction
+ * is the rail, and the grid's job is to feed it.
+ *
+ * A priced car offers "load into the calculator"; an unpriced one offers the
+ * phone, because loading a price the dealership has not verified into a live
+ * payment figure is exactly what the trust gate exists to prevent.
+ */
+import CarSilhouette from '../../components/CarSilhouette.astro';
+import { getEntry } from 'astro:content';
+import { previewPath, asset, formatAmd, monthlyPayment, useTranslations, type Lang } from '../../i18n/utils';
+import { priceOf, type Car } from '../../lib/catalog';
+
+interface Props {
+  car: Car;
+  lang: Lang;
+  design: string;
+  financing: any;
+  maxRange: number;
+  index?: number;
+}
+
+const { car, lang, design, financing: f, index = 0 } = Astro.props;
+const t = useTranslations(lang);
+const site = (await getEntry('settings', 'site'))!.data;
+const d = car.data;
+
+const name = [d.brand, d.model].join(' ');
+const href = previewPath(design, lang, `/cars/${car.id}`);
+const price = priceOf(car);
+const monthly = price ? monthlyPayment(price, f.defaultDownPercent, f.defaultTermYears, f.ratePercent) : null;
+---
+
+<article class="tile h-full flex flex-col" data-reveal style={`--reveal-delay:${(index % 3) * 80}ms`}>
+  <a href={href} class="block aspect-[16/10] overflow-hidden bg-mist no-underline">
+    {d.images.length > 0
+      ? <img src={asset(d.images[0])} alt={name} loading="lazy" decoding="async" width="640" height="400" class="w-full h-full object-cover" />
+      : <CarSilhouette body={d.bodyType} class="w-full h-full" />}
+  </a>
+
+  <div class="flex flex-col flex-1 p-5 gap-2">
+    <h3 class="text-[1.0625rem] leading-tight font-[var(--font-display)] font-bold tracking-[-0.02em]">
+      <a href={href} class="no-underline">{name}</a>
+      {d.year && <span class="text-ink-2 font-normal"> {d.year}</span>}
+    </h3>
+
+    <p class="label">
+      {t(`status.${d.status}` as 'status.available')}{d.rangeKm && ` · ${d.rangeKm} km`}
+    </p>
+
+    <div class="mt-auto pt-4">
+      {monthly !== null ? (
+        <>
+          <p class="font-data text-lg font-bold tracking-[-0.03em]">
+            {formatAmd(monthly, lang)}<span class="text-ink-2 text-xs font-normal"> {t('calc.perMonth')}</span>
+          </p>
+          <button
+            type="button"
+            class="loadbtn mt-2.5"
+            aria-pressed="false"
+            data-load-price={price}
+            data-load-name={name}
+          >▸ {t('calc.title')}</button>
+        </>
+      ) : (
+        <>
+          <p class="label !text-ink">{t('car.onRequest')}</p>
+          <a href={`tel:${site.phones[0].replace(/[^+\d]/g, '')}`} class="loadbtn mt-2.5 no-underline">▸ {t('cta.call')}</a>
+        </>
+      )}
+    </div>
+  </div>
+</article>

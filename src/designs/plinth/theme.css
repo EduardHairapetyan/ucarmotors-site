@@ -1,0 +1,100 @@
+/*
+ * PLINTH — a car is sold by being looked at, one at a time.
+ *
+ * White page, gallery serif, and dark used only ever *underneath* a
+ * photograph: the graphite is the wall of the showroom, never the chrome of
+ * the site. The full gradient appears exactly once per page, as the progress
+ * rail under the header.
+ *
+ * Stack order matters: the Latin/Cyrillic face is always first, because
+ * Noto's Armenian families ship a Latin subset and would otherwise silently
+ * set English and Russian. A Noto Armenian face sits behind every stack,
+ * including the data stack — the dram sign ֏ (U+058F) exists in no other
+ * family here.
+ */
+
+[data-design='plinth'] {
+  --font-sans: 'Inter Variable', 'Noto Sans Armenian Variable', system-ui, sans-serif;
+  --font-data: 'JetBrains Mono Variable', 'Noto Sans Armenian Variable', ui-monospace, monospace;
+  --font-display: 'Noto Serif Variable', 'Noto Serif Armenian Variable', Georgia, serif;
+
+  --color-mist: #F4F4F2;
+  --color-line: #E2E2DE;
+  --color-wash: #F4F4F2;
+
+  background: #fff;
+}
+
+[data-design='plinth'] body { background: #fff; }
+
+/* The gallery voice: large, light, generously leaded, never bold. Armenian
+   has no true light cut in Noto Serif Armenian, so hy is nudged up a step —
+   it holds the same optical weight at 400 that Latin holds at 300. */
+[data-design='plinth'] .display {
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.06;
+}
+[data-design='plinth'] :lang(hy) .display { font-weight: 400; letter-spacing: 0; line-height: 1.14; }
+[data-design='plinth'] h1,
+[data-design='plinth'] h2,
+[data-design='plinth'] h3 { font-family: var(--font-display); font-weight: 400; }
+
+[data-design='plinth'] .label {
+  font-family: var(--font-data);
+  font-size: 0.6875rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-ink-2);
+}
+[data-design='plinth'] :lang(hy) .label { letter-spacing: 0.1em; }
+
+/* The one gradient event per page: a rail that fills as you move down the
+   sequence. Scroll indicator and state-of-charge meter at the same time. */
+[data-design='plinth'] .rail { height: 2px; background: var(--color-line); }
+[data-design='plinth'] .rail > i {
+  display: block;
+  height: 100%;
+  width: var(--rail, 0%);
+  background: var(--gradient-brand);
+  transition: width 90ms linear;
+}
+
+/* Plates. Fixed 16/9 with a centred subject, so twelve borrowed photographs
+   of mixed crop still line up down the page. */
+[data-design='plinth'] .plate {
+  background: var(--color-graphite);
+  overflow: hidden;
+}
+[data-design='plinth'] .plate img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; }
+
+[data-design='plinth'] .chip {
+  border-radius: 0;
+  border-color: var(--color-line);
+  background: transparent;
+  letter-spacing: 0.16em;
+}
+[data-design='plinth'] .chip.is-on { background: var(--color-ink); border-color: var(--color-ink); color: #fff; }
+
+[data-design='plinth'] .panel { background: var(--color-mist); box-shadow: none; }
+[data-design='plinth'] .frame { box-shadow: none; }
+
+[data-design='plinth'] .link {
+  font-family: var(--font-data);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 3px;
+  transition: color 140ms ease;
+}
+[data-design='plinth'] .link:hover { color: var(--color-signal); }
+
+/* Bands enter as the eye reaches them — the closest thing to walking around
+   a car that a page can do. Suppressed wholesale by the reduced-motion rule
+   already in global.css. */
+/* No space before `.js` — both attributes are on <html>, so a descendant
+   combinator would never match. */
+[data-design='plinth'].js [data-reveal] { transform: translateY(2rem); }

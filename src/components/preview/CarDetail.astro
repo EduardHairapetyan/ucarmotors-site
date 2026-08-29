@@ -1,0 +1,164 @@
+---
+/**
+ * Car page body, shared by every design preview. Themed rather than rebuilt:
+ * a direction changes what this looks like through its tokens and the
+ * `.panel` / `.spec` surfaces, not by forking the markup.
+ *
+ * No JSON-LD here — preview pages are noindex, and an unverified price must
+ * never reach structured data even accidentally.
+ */
+import { getEntry } from 'astro:content';
+import CarSilhouette from '../CarSilhouette.astro';
+import PaymentCalculator from '../PaymentCalculator.astro';
+import { priceOf, type Car } from '../../lib/catalog';
+import { previewPath, asset, useTranslations, pick, formatAmd, type Lang } from '../../i18n/utils';
+
+interface Props { lang: Lang; design: string; car: Car }
+const { lang, design, car } = Astro.props;
+const t = useTranslations(lang);
+
+const site = (await getEntry('settings', 'site'))!.data;
+const d = car.data;
+const name = `${d.brand} ${d.model}`;
+const price = priceOf(car);
+const blurb = pick(d.description, lang);
+
+const facts = [
+  d.rangeKm && { label: t('car.range'), value: `${d.rangeKm} km` },
+  d.batteryKwh && { label: t('car.battery'), value: `${d.batteryKwh} kWh` },
+  d.powerHp && { label: t('car.power'), value: `${d.powerHp} hp` },
+  d.drivetrain && { label: t('car.drivetrain'), value: d.drivetrain.toUpperCase() },
+].filter(Boolean) as { label: string; value: string }[];
+
+const allSpecs = [...facts, ...d.specs.map((s) => ({ label: pick(s.label, lang), value: s.value }))];
+const hasTabs = Boolean(blurb) || allSpecs.length > 0 || d.colors.length > 0;
+---
+
+<section class="relative overflow-hidden bg-mist">
+  <div class="shell relative pt-6 pb-14 sm:pb-20">
+    <a href={previewPath(design, lang, '/cars')} class="eyebrow no-underline text-ink-2 hover:text-ink">← {t('cars.title')}</a>
+
+    <div class="grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:gap-14 mt-6 lg:items-center">
+      <div>
+        <div class="frame aspect-[16/9] bg-white overflow-hidden">
+          {d.images.length > 0 ? (
+            <img src={asset(d.images[0])} alt={name} width="900" height="506" class="w-full h-full object-cover" />
+          ) : (
+            <CarSilhouette body={d.bodyType} tone="light" class="w-full h-full" />
+          )}
+        </div>
+
+        {d.images.length > 0 && d.imageCredit && (
+          <p class="mt-2 text-[0.6875rem] text-ink-2">{d.imageCredit}</p>
+        )}
+
+        {d.images.length > 1 && (
+          <div class="grid grid-cols-4 gap-2 mt-2">
+            {d.images.slice(1, 5).map((src, i) => (
+              <img src={asset(src)} alt={`${name} ${i + 2}`} loading="lazy" width="220" height="124" class="frame aspect-[16/9] object-cover" />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div>
+        <p class="eyebrow text-signal">{t(`power.${d.powertrain}` as 'power.electric')}</p>
+        <h1 class="text-title mt-3 text-ink">
+          {name}{d.year ? <span class="text-ink-2 font-normal"> {d.year}</span> : null}
+        </h1>
+        <p class="eyebrow mt-3 text-charge">{t(`status.${d.status}` as 'status.available')}</p>
+
+        <div class="mt-8 border-t border-line pt-6">
+          {price !== null ? (
+            <>
+              <p class="eyebrow text-ink-2 mb-2">{t('car.price')}</p>
+              <p class="payment text-ink text-4xl sm:text-5xl">
+                {formatAmd(price, lang)}<span class="text-xl text-ink-2 font-medium"> ֏</span>
+              </p>
+              <div class="mt-6 pt-5 border-t border-line">
+                <p class="eyebrow text-ink-2 mb-3">{t('calc.title')}</p>
+                <PaymentCalculator price={price} financing={site.financing} lang={lang} size="sm" tone="light" id={car.id} />
+              </div>
+            </>
+          ) : (
+            <p class="eyebrow text-ink-2">{t('car.onRequest')}</p>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{hasTabs && (
+  <section class="shell py-14 sm:py-20" data-reveal>
+    <car-tabs class="block">
+      <div role="tablist" aria-label={name} class="flex gap-7 border-b border-line">
+        <button type="button" role="tab" id={`tab-specs-${car.id}`} aria-controls={`panel-specs-${car.id}`} aria-selected="true" class="tab">{t('car.specs')}</button>
+        {blurb && (
+          <button type="button" role="tab" id={`tab-about-${car.id}`} aria-controls={`panel-about-${car.id}`} aria-selected="false" class="tab">{t('tab.about')}</button>
+        )}
+      </div>
+
+      <div role="tabpanel" id={`panel-specs-${car.id}`} aria-labelledby={`tab-specs-${car.id}`} class="pt-8">
+        {allSpecs.length > 0 ? (
+          <dl class="grid grid-cols-2 sm:grid-cols-4 gap-px bg-line border border-line">
+            {allSpecs.map((f) => (
+              <div class="bg-white p-5">
+                <dt class="eyebrow text-ink-2">{f.label}</dt>
+                <dd class="font-data text-xl mt-2">{f.value}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : (
+          <p class="text-ink-2 max-w-[46ch]">{t('car.specsPending')}</p>
+        )}
+
+        {d.colors.length > 0 && (
+          <div class="mt-6">
+            <p class="eyebrow text-ink-2 mb-2">{t('car.colors')}</p>
+            <p class="text-sm">{d.colors.join(' · ')}</p>
+          </div>
+        )}
+      </div>
+
+      {blurb && (
+        <div role="tabpanel" id={`panel-about-${car.id}`} aria-labelledby={`tab-about-${car.id}`} class="pt-8">
+          <p class="leading-relaxed text-ink-2 max-w-[60ch]">{blurb}</p>
+        </div>
+      )}
+    </car-tabs>
+  </section>
+)}
+
+<script>
+  class CarTabs extends HTMLElement {
+    connectedCallback() {
+      const tabs = [...this.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+      const panels = [...this.querySelectorAll<HTMLElement>('[role="tabpanel"]')];
+      if (tabs.length < 2) return;
+
+      const select = (i: number) => {
+        tabs.forEach((tab, j) => {
+          tab.setAttribute('aria-selected', String(i === j));
+          tab.tabIndex = i === j ? 0 : -1;
+        });
+        panels.forEach((panel, j) => { panel.hidden = i !== j; });
+      };
+
+      tabs.forEach((tab, i) => {
+        tab.addEventListener('click', () => select(i));
+        tab.addEventListener('keydown', (e) => {
+          if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+          e.preventDefault();
+          const next = (i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length;
+          tabs[next].focus();
+          select(next);
+        });
+      });
+
+      select(0);
+    }
+  }
+
+  if (!customElements.get('car-tabs')) customElements.define('car-tabs', CarTabs);
+</script>

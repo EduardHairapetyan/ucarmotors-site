@@ -1,0 +1,24 @@
+---
+/**
+ * Home page for one design × one locale.
+ *
+ * Inside `/preview/` the hy locale is prefixed like the other two — the
+ * production prefixless-default rule buys nothing on throwaway URLs and would
+ * force a branch in every `getStaticPaths` here.
+ */
+import { designs } from '../../../../designs/registry';
+import { views } from '../../../../designs';
+import { locales, type Lang } from '../../../../i18n/ui';
+
+export function getStaticPaths() {
+  return designs.flatMap((d) => locales.map((l) => ({ params: { design: d.id, locale: l } })));
+}
+
+const design = Astro.params.design!;
+const lang = Astro.params.locale as Lang;
+const V = views[design]!;
+---
+
+<V.Shell design={design} lang={lang} path="/" page="home">
+  <V.Home lang={lang} design={design} />
+</V.Shell>

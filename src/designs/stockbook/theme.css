@@ -1,0 +1,117 @@
+/*
+ * STOCK BOOK — a car is a line in a price list, and the price list is the
+ * product.
+ *
+ * The one rule that keeps this out of the broadsheet look the client
+ * rejected: **no hairlines**. Rows are separated by alternating tint and by
+ * weight, never by a 1px rule. If a border creeps back in, this becomes the
+ * design that was already turned down.
+ */
+
+[data-design='stockbook'] {
+  --font-sans: 'IBM Plex Sans Variable', 'Noto Sans Armenian Variable', system-ui, sans-serif;
+  --font-data: 'IBM Plex Mono', 'Noto Sans Armenian Variable', ui-monospace, monospace;
+  --font-display: 'IBM Plex Sans Variable', 'Noto Sans Armenian Variable', system-ui, sans-serif;
+
+  --color-mist: #F2F3F5;
+  --color-wash: #EDF0FE;
+  --color-line: transparent; /* there are no rules in this direction */
+
+  background: var(--color-mist);
+}
+
+[data-design='stockbook'] body { background: var(--color-mist); }
+[data-design='stockbook'] h1,
+[data-design='stockbook'] h2,
+[data-design='stockbook'] h3 { font-weight: 600; letter-spacing: -0.02em; }
+
+/* Every figure on the page is tabular, so the dram columns align to the
+   digit whichever locale formatted them. */
+[data-design='stockbook'] .payment,
+[data-design='stockbook'] .num { font-variant-numeric: tabular-nums; font-family: var(--font-data); }
+[data-design='stockbook'] .num { font-size: 0.9375rem; }
+
+[data-design='stockbook'] .label {
+  font-family: var(--font-data);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink-2);
+}
+[data-design='stockbook'] :lang(hy) .label { letter-spacing: 0.06em; }
+
+/* ---- the book ------------------------------------------------------- */
+
+[data-design='stockbook'] .book { background: #fff; }
+
+/* Header block carries the only gradient on the page, as a cap. */
+[data-design='stockbook'] .book-cap { background: #fff; border-top: 4px solid transparent; border-image: var(--gradient-brand) 1; }
+
+[data-design='stockbook'] .row {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr 7rem 8.5rem 8.5rem 2rem;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: #fff;
+  transition: background-color 120ms ease;
+}
+[data-design='stockbook'] [data-car]:nth-child(even) .row { background: var(--color-wash); }
+[data-design='stockbook'] .row:hover { background: #E4E9FC; }
+[data-design='stockbook'] .row-head {
+  grid-template-columns: 4.5rem 1fr 7rem 8.5rem 8.5rem 2rem;
+  background: #fff !important;
+  padding-block: 0.875rem;
+}
+
+/* Below 60rem the table must not scroll sideways — it restacks. The payment
+   keeps its size so it stays the largest thing in the block. */
+@media (max-width: 60rem) {
+  /* The name gets the full measure and the payment sits under it, rather than
+     the two fighting over one line — a truncated model name is useless, and
+     the payment must stay the largest thing in the block. */
+  [data-design='stockbook'] .row {
+    grid-template-columns: 4.5rem 1fr 1.25rem;
+    grid-template-areas: 'img name caret' 'img meta caret' 'img money caret';
+    row-gap: 0.125rem;
+    gap: 0.875rem;
+    align-items: start;
+    padding: 0.875rem 1rem;
+  }
+  [data-design='stockbook'] .row-thumb { grid-area: img; }
+  [data-design='stockbook'] .row-name  { grid-area: name; }
+  [data-design='stockbook'] .row-meta  { grid-area: meta; }
+  [data-design='stockbook'] .row-money { grid-area: money; text-align: left; margin-top: 0.25rem; }
+  [data-design='stockbook'] .caret { grid-area: caret; align-self: center; }
+  [data-design='stockbook'] .row-price { display: none; }
+  [data-design='stockbook'] .row-head { display: none; }
+  [data-design='stockbook'] .drawer { padding: 1.25rem 1rem 1.75rem; }
+}
+
+[data-design='stockbook'] .row-thumb { aspect-ratio: 16 / 10; overflow: hidden; background: #E4E6EA; }
+[data-design='stockbook'] .row-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+[data-design='stockbook'] .drawer { background: #fff; padding: 1.5rem 1.25rem 2rem; }
+[data-design='stockbook'] [data-car]:nth-child(even) .drawer { background: var(--color-wash); }
+[data-design='stockbook'] .caret { transition: transform 140ms ease; }
+[data-design='stockbook'] details[open] .caret { transform: rotate(180deg); }
+[data-design='stockbook'] summary { list-style: none; cursor: pointer; }
+[data-design='stockbook'] summary::-webkit-details-marker { display: none; }
+
+[data-design='stockbook'] .chip {
+  border: 0;
+  border-radius: 2px;
+  background: #fff;
+  padding: 0.5rem 0.875rem;
+  letter-spacing: 0.1em;
+}
+[data-design='stockbook'] .chip:hover { background: #E4E9FC; color: var(--color-ink); }
+[data-design='stockbook'] .chip.is-on { background: var(--color-signal); color: #fff; }
+
+[data-design='stockbook'] .panel { background: #fff; box-shadow: none; border-radius: 2px; }
+[data-design='stockbook'] .frame { box-shadow: none; }
+
+[data-design='stockbook'] .sortbtn { cursor: pointer; background: none; border: 0; padding: 0; text-align: left; }
+[data-design='stockbook'] .sortbtn.text-right { text-align: right; }
+[data-design='stockbook'] .sortbtn[aria-pressed='true'] { color: var(--color-signal); }

@@ -1,0 +1,242 @@
+---
+import '../../styles/global.css';
+import '../../styles/preview.css';
+import './theme.css';
+import '@fontsource-variable/wix-madefor-display';
+import '@fontsource-variable/wix-madefor-text';
+
+import Doc from '../../components/preview/Doc.astro';
+import Icon from '../../components/Icon.astro';
+import Logo from '../../components/Logo.astro';
+import { getCars, entryPrice } from '../../lib/catalog';
+import { previewPath, useTranslations, pick, formatAmd, monthlyPayment, type Lang } from '../../i18n/utils';
+import { getEntry } from 'astro:content';
+
+interface Props {
+  design: string;
+  lang: Lang;
+  path: string;
+  page: 'home' | 'cars' | 'financing' | 'contact' | 'car';
+  title?: string;
+}
+
+const { design, lang, path, page, title } = Astro.props;
+const t = useTranslations(lang);
+const site = (await getEntry('settings', 'site'))!.data;
+const f = site.financing;
+
+const TITLES = {
+  home: t('hero.title'),
+  cars: t('cars.title'),
+  financing: t('fin.title'),
+  contact: t('contact.title'),
+  car: title ?? '',
+} as const;
+
+const nav = [
+  { href: '/cars', label: t('nav.cars') },
+  { href: '/financing', label: t('nav.financing') },
+  { href: '/contact', label: t('nav.contact') },
+];
+
+// The rail is never blank: it opens on the cheapest car whose price is
+// published, and any car whose price is not published leaves it on that one.
+const cars = await getCars();
+const entry = entryPrice(cars);
+const seedPrice = entry?.price ?? 0;
+const seedName = entry ? `${entry.car.data.brand} ${entry.car.data.model}` : '';
+const seedMonthly = seedPrice ? monthlyPayment(seedPrice, f.defaultDownPercent, f.defaultTermYears, f.ratePercent) : 0;
+---
+
+<Doc design={design} lang={lang} path={path} title={title ?? TITLES[page]} description={t('hero.lede')}>
+  <header slot="header" class="sticky top-[38px] z-30 bg-white border-b border-line">
+    <div class="shell flex items-center gap-5 h-16">
+      <a href={previewPath(design, lang, '/')} class="no-underline flex items-center gap-2.5 shrink-0">
+        <Logo size={24} />
+        <span class="font-[var(--font-display)] font-bold tracking-[-0.03em]">Ucar Motors</span>
+      </a>
+
+      <nav aria-label="Main" class="hs flex items-center gap-6 ml-auto overflow-x-auto">
+        {nav.map((item) => (
+          <a
+            href={previewPath(design, lang, item.href)}
+            aria-current={path === item.href ? 'page' : undefined}
+            class:list={[
+              'text-sm font-medium no-underline whitespace-nowrap transition-colors',
+              path === item.href ? 'text-ink' : 'text-ink-2 hover:text-ink',
+            ]}
+          >{item.label}</a>
+        ))}
+      </nav>
+
+      <a href={`tel:${site.phones[0].replace(/[^+\d]/g, '')}`} class="hidden sm:inline-flex items-center gap-2 text-sm font-semibold no-underline text-ink hover:text-signal">
+        <Icon name="phone" size={14} />{t('cta.call')}
+      </a>
+    </div>
+  </header>
+
+  <slot />
+
+  <footer slot="footer" class="dusk mt-20">
+    <div class="shell py-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="sm:col-span-2">
+        <p class="font-[var(--font-display)] text-xl font-bold">Ucar Motors</p>
+        <p class="mt-3 text-sm leading-relaxed text-white/60 max-w-[34ch]">{pick(site.address, lang)}</p>
+        <p class="text-sm text-white/60">{pick(site.hours, lang)}</p>
+      </div>
+      <div>
+        <p class="label">{t('contact.phone')}</p>
+        <ul class="mt-2.5 space-y-1">
+          {site.phones.map((p) => (
+            <li><a href={`tel:${p.replace(/[^+\d]/g, '')}`} class="font-data text-sm no-underline text-white/85 hover:text-white">{p}</a></li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <p class="label">Ucar Motors</p>
+        <div class="mt-2.5 flex gap-3 text-white/60">
+          <a href={site.social.facebook} rel="noopener" aria-label="Facebook" class="hover:text-white"><Icon name="facebook" size={18} /></a>
+          <a href={site.social.instagram} rel="noopener" aria-label="Instagram" class="hover:text-white"><Icon name="instagram" size={18} /></a>
+          <a href={site.social.linkedin} rel="noopener" aria-label="LinkedIn" class="hover:text-white"><Icon name="linkedin" size={18} /></a>
+        </div>
+        <a href={`https://wa.me/${site.whatsapp}`} rel="noopener" class="inline-flex items-center gap-2 mt-4 text-sm no-underline text-white/85 hover:text-white">
+          <Icon name="whatsapp" size={15} />WhatsApp
+        </a>
+      </div>
+    </div>
+    <div class="shell pb-24 lg:pb-10 label">© {new Date().getFullYear()} Ucar Motors · {t('footer.rights')}</div>
+  </footer>
+
+  <!-- The signature: one instrument, permanently resident, showing a live
+       monthly figure for whichever car you last touched. -->
+  <payment-rail
+    slot="footer"
+    class="rail block"
+    data-rate={f.ratePercent}
+    data-lang={lang}
+    data-price={seedPrice}
+    data-years={t('calc.years')}
+  >
+    <details class="relative">
+      <span class="glow" aria-hidden="true"></span>
+
+      <summary class="relative flex items-center gap-3 px-4 lg:px-5 h-14 lg:h-auto lg:pt-5 lg:pb-2 lg:block">
+        <span class="label lg:block hidden">{t('calc.title')}</span>
+        <span class="flex items-baseline gap-1.5 lg:mt-2">
+          <span class="readout text-[1.5rem] lg:text-[2.75rem]" data-out>{formatAmd(seedMonthly, lang)}</span>
+          <span class="text-white/55 text-sm font-medium">֏</span>
+          <span class="sr-only">{t('calc.perMonth')}</span>
+        </span>
+        <span class="ml-auto lg:hidden text-white/55 text-xs truncate max-w-[9rem]" data-name-mini>{seedName}</span>
+        <span class="caret text-white/55 lg:absolute lg:right-5 lg:top-5" aria-hidden="true">▾</span>
+      </summary>
+
+      <div class="relative px-4 lg:px-5 pb-5">
+        <p class="text-sm text-white/70 truncate" data-name>{seedName}</p>
+
+        <div class="mt-4 space-y-3">
+          <div>
+            <label for="rail-down" class="flex justify-between items-baseline label mb-1.5">
+              <span>{t('calc.down')}</span>
+              <span class="value text-white font-semibold" data-down-out>{f.defaultDownPercent}%</span>
+            </label>
+            <input type="range" id="rail-down" data-down min={f.minDownPercent} max={f.maxDownPercent} step="5" value={f.defaultDownPercent} class="w-full h-1.5 cursor-pointer" />
+          </div>
+          <div>
+            <label for="rail-term" class="flex justify-between items-baseline label mb-1.5">
+              <span>{t('calc.term')}</span>
+              <span class="value text-white font-semibold" data-term-out>{f.defaultTermYears} {t('calc.years')}</span>
+            </label>
+            <input type="range" id="rail-term" data-term min={f.minTermYears} max={f.maxTermYears} step="1" value={f.defaultTermYears} class="w-full h-1.5 cursor-pointer" />
+          </div>
+        </div>
+
+        <p class="mt-4 text-[0.6875rem] leading-relaxed text-white/45">{f.ratePercent}% {t('calc.rate')} · {t('calc.note')}</p>
+      </div>
+    </details>
+  </payment-rail>
+</Doc>
+
+<script>
+  // The rail. Any element with `data-load-price` anywhere on the page swaps
+  // the car it is showing — that is the whole navigation model of this
+  // direction, and it never causes a page load.
+  class PaymentRail extends HTMLElement {
+    #raf = 0;
+
+    connectedCallback() {
+      const rate = Number(this.dataset.rate);
+      const lang = this.dataset.lang || 'hy';
+      const yearsWord = this.dataset.years ?? '';
+
+      const out = this.querySelector<HTMLElement>('[data-out]');
+      const down = this.querySelector<HTMLInputElement>('[data-down]');
+      const term = this.querySelector<HTMLInputElement>('[data-term]');
+      const downOut = this.querySelector<HTMLElement>('[data-down-out]');
+      const termOut = this.querySelector<HTMLElement>('[data-term-out]');
+      const nameEls = [...this.querySelectorAll<HTMLElement>('[data-name], [data-name-mini]')];
+      if (!out || !down || !term) return;
+
+      const nf = new Intl.NumberFormat(
+        { hy: 'hy-AM', ru: 'ru-RU', en: 'en-US' }[lang] ?? 'hy-AM',
+        { maximumFractionDigits: 0 }
+      );
+      const fmt = (n: number) => nf.format(Math.round(n)).replace(/[ ,]/g, ' ');
+
+      let price = Number(this.dataset.price) || 0;
+      const payment = (d: number, y: number) => {
+        const principal = price * (1 - d / 100);
+        if (principal <= 0) return 0;
+        const n = Math.round(y * 12);
+        const i = rate / 100 / 12;
+        if (i === 0) return principal / n;
+        return (principal * i) / (1 - Math.pow(1 + i, -n));
+      };
+
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let shown = payment(Number(down.value), Number(term.value));
+
+      const render = () => {
+        const target = payment(Number(down.value), Number(term.value));
+        if (downOut) downOut.textContent = `${down.value}%`;
+        if (termOut) termOut.textContent = `${term.value} ${yearsWord}`.trim();
+
+        if (reduced) { shown = target; out.textContent = fmt(target); return; }
+
+        cancelAnimationFrame(this.#raf);
+        const from = shown;
+        const start = performance.now();
+        const step = (now: number) => {
+          const p = Math.min(1, (now - start) / 220);
+          const eased = 1 - Math.pow(1 - p, 3);
+          shown = from + (target - from) * eased;
+          out.textContent = fmt(shown);
+          if (p < 1) this.#raf = requestAnimationFrame(step);
+        };
+        this.#raf = requestAnimationFrame(step);
+      };
+
+      down.addEventListener('input', render);
+      term.addEventListener('input', render);
+
+      document.addEventListener('click', (e) => {
+        const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-load-price]');
+        if (!btn) return;
+        const next = Number(btn.dataset.loadPrice);
+        if (!next) return;
+
+        price = next;
+        nameEls.forEach((el) => { el.textContent = btn.dataset.loadName ?? ''; });
+        document.querySelectorAll<HTMLElement>('[data-load-price]').forEach((b) =>
+          b.setAttribute('aria-pressed', String(b === btn))
+        );
+        this.querySelector<HTMLDetailsElement>('details')!.open = true;
+        render();
+      });
+    }
+
+    disconnectedCallback() { cancelAnimationFrame(this.#raf); }
+  }
+
+  if (!customElements.get('payment-rail')) customElements.define('payment-rail', PaymentRail);
+</script>

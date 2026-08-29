@@ -1,0 +1,24 @@
+---
+import { designs } from '../../../../../designs/registry';
+import { views } from '../../../../../designs';
+import CarDetail from '../../../../../components/preview/CarDetail.astro';
+import { getCars } from '../../../../../lib/catalog';
+import { locales, type Lang } from '../../../../../i18n/ui';
+
+export async function getStaticPaths() {
+  const cars = await getCars();
+  return designs.flatMap((d) =>
+    locales.flatMap((l) => cars.map((car) => ({ params: { design: d.id, locale: l, slug: car.id }, props: { car } })))
+  );
+}
+
+const design = Astro.params.design!;
+const lang = Astro.params.locale as Lang;
+const { car } = Astro.props;
+const V = views[design]!;
+const name = `${car.data.brand} ${car.data.model}`;
+---
+
+<V.Shell design={design} lang={lang} path={`/cars/${car.id}`} page="car" title={name}>
+  <CarDetail lang={lang} design={design} car={car} />
+</V.Shell>

@@ -1,0 +1,96 @@
+---
+/**
+ * HIGHWAY SIGN home: the sign, then the index.
+ *
+ * No hero photograph anywhere. The headline, the road, and three hard
+ * numbers are the artwork — which is why switching language visibly changes
+ * the page rather than swapping a caption.
+ */
+import { getEntry } from 'astro:content';
+import Card from './Card.astro';
+import Icon from '../../components/Icon.astro';
+import { getCars, maxRange, entryPrice } from '../../lib/catalog';
+import { previewPath, useTranslations, pick, formatAmd, type Lang } from '../../i18n/utils';
+
+interface Props { lang: Lang; design: string }
+const { lang, design } = Astro.props;
+const t = useTranslations(lang);
+
+const site = (await getEntry('settings', 'site'))!.data;
+const f = site.financing;
+const cars = await getCars();
+const max = maxRange(cars);
+const entry = entryPrice(cars);
+
+const services = [t('svc.sales'), t('svc.charging'), t('svc.warranty'), t('svc.service'), t('svc.financing')];
+
+// The three numbers a sign can carry at speed.
+const facts = [
+  { n: String(cars.length), l: t('cars.count') },
+  { n: `${f.ratePercent}%`, l: t('calc.rate') },
+  { n: `${f.maxTermYears}`, l: t('calc.years') },
+];
+---
+
+<section class="sign">
+  <div class="shell sign-in py-16 sm:py-24 lg:py-28">
+    <h1 class="display text-white text-[clamp(2.5rem,8.5vw,6rem)] max-w-[13ch]" style="--d:60ms">{t('hero.title')}</h1>
+
+    <p class="mt-8 max-w-[36ch] text-white/85 leading-relaxed text-lg" style="--d:200ms">{t('hero.lede')}</p>
+
+    <p class="label !text-white/70 mt-10" style="--d:300ms">{pick(site.address, lang)}</p>
+
+    <dl class="mt-4 flex flex-wrap gap-x-10 gap-y-3" style="--d:360ms">
+      {facts.map((x) => (
+        <div class="flex items-baseline gap-2">
+          <dt class="sr-only">{x.l}</dt>
+          <dd class="font-data text-white text-2xl font-bold tracking-[-0.03em]">{x.n}</dd>
+          <span class="label !text-white/60">{x.l}</span>
+        </div>
+      ))}
+    </dl>
+
+    <div class="mt-10 flex flex-wrap gap-3" style="--d:440ms">
+      <a href={previewPath(design, lang, '/cars')} class="label !text-ink bg-white px-6 py-4 no-underline hover:bg-white/85 transition-colors">{t('nav.cars')}</a>
+      <a href={`tel:${site.phones[0].replace(/[^+\d]/g, '')}`} class="label !text-white border border-white/45 px-6 py-4 no-underline hover:bg-white hover:!text-ink transition-colors inline-flex items-center gap-2">
+        <Icon name="phone" size={13} />{site.phones[0]}
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- The index. Every car, in one column, read top to bottom like a road sign
+     list of destinations. -->
+<section class="shell py-16 sm:py-20">
+  <div class="flex items-end justify-between gap-4 flex-wrap pb-6">
+    <h2 class="display text-[clamp(1.5rem,3.4vw,2.25rem)]">{t('cars.title')}</h2>
+    <p class="label">{cars.length} {t('cars.count')}</p>
+  </div>
+
+  <div class="flex flex-col border-b border-line">
+    {cars.map((car, i) => (
+      <Card car={car} lang={lang} design={design} financing={f} maxRange={max} index={i} />
+    ))}
+  </div>
+
+  {entry && (
+    <p class="label mt-6">
+      {t('cta.from')} <span class="value text-ink font-data">{formatAmd(entry.price, lang)} ֏</span> · {t('calc.note')}
+    </p>
+  )}
+</section>
+
+<section class="bg-wash">
+  <div class="shell py-16 sm:py-20 grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-20" data-reveal>
+    <div>
+      <p class="label">{t('about.eyebrow')}</p>
+      <h2 class="display text-[clamp(1.5rem,3.4vw,2.25rem)] mt-4 max-w-[18ch]">{t('about.title')}</h2>
+      <p class="mt-6 leading-relaxed text-ink-2 max-w-[50ch]">{t('about.lede')}</p>
+    </div>
+    <ul class="grid gap-0 self-center">
+      {services.map((s) => (
+        <li class="border-t border-line py-4 text-lg font-medium">{s}</li>
+      ))}
+    </ul>
+  </div>
+</section>

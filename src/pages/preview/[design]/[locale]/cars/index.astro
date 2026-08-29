@@ -1,0 +1,18 @@
+---
+import { designs } from '../../../../../designs/registry';
+import { views } from '../../../../../designs';
+import Cars from '../../../../../components/preview/Cars.astro';
+import { locales, type Lang } from '../../../../../i18n/ui';
+
+export function getStaticPaths() {
+  return designs.flatMap((d) => locales.map((l) => ({ params: { design: d.id, locale: l } })));
+}
+
+const design = Astro.params.design!;
+const lang = Astro.params.locale as Lang;
+const V = views[design]!;
+---
+
+<V.Shell design={design} lang={lang} path="/cars" page="cars">
+  <Cars lang={lang} design={design} Card={V.Card} gridClass={V.gridClass} />
+</V.Shell>

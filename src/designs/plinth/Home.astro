@@ -1,0 +1,102 @@
+---
+/**
+ * PLINTH home: one full-bleed plate, then the sequence.
+ *
+ * The hero is a photograph with the headline set over it, so the page opens
+ * on a car rather than on a claim. Everything below is the same band the
+ * catalogue uses — the home page is the first three cars of the sequence,
+ * not a different component.
+ */
+import { getEntry } from 'astro:content';
+import Card from './Card.astro';
+import CarSilhouette from '../../components/CarSilhouette.astro';
+import { getCars, getFeatured, maxRange, entryPrice, priceOf } from '../../lib/catalog';
+import { previewPath, asset, useTranslations, pick, formatAmd, type Lang } from '../../i18n/utils';
+
+interface Props { lang: Lang; design: string }
+const { lang, design } = Astro.props;
+const t = useTranslations(lang);
+
+const site = (await getEntry('settings', 'site'))!.data;
+const cars = await getCars();
+const featured = await getFeatured(3);
+const max = maxRange(cars);
+const entry = entryPrice(cars);
+
+const heroCar = entry?.car ?? featured[0]!;
+const heroPrice = entry?.price ?? priceOf(heroCar);
+const heroName = `${heroCar.data.brand} ${heroCar.data.model}`;
+
+const services = [t('svc.sales'), t('svc.charging'), t('svc.warranty'), t('svc.service'), t('svc.financing')];
+---
+
+<!-- The plate. Type sits in the lower third over a scrim, which is the only
+     place white type is guaranteed to hold against an unknown photograph. -->
+<section class="plate relative h-[78vh] min-h-[30rem]">
+  {heroCar.data.images.length > 0
+    ? <img src={asset(heroCar.data.images[0])} alt={heroName} width="1920" height="1080" class="absolute inset-0" />
+    : <CarSilhouette body={heroCar.data.bodyType} class="absolute inset-0 w-full h-full" />}
+
+  <div class="absolute inset-0 bg-gradient-to-t from-graphite via-graphite/45 to-transparent"></div>
+
+  <div class="shell relative h-full flex flex-col justify-end pb-10 sm:pb-14">
+    <h1 class="display text-white text-[clamp(2.25rem,6vw,4.5rem)] max-w-[16ch]">{t('hero.title')}</h1>
+    <p class="mt-5 text-white/70 leading-relaxed max-w-[42ch]">{t('hero.lede')}</p>
+
+    <div class="mt-9 flex flex-wrap items-end justify-between gap-6 border-t border-white/20 pt-5">
+      <a href={previewPath(design, lang, `/cars/${heroCar.id}`)} class="no-underline group">
+        <p class="label !text-white/45">{t(`status.${heroCar.data.status}` as 'status.available')}</p>
+        <p class="display text-white text-2xl mt-1.5 group-hover:text-white/80 transition-colors">{heroName}</p>
+      </a>
+
+      {heroPrice !== null && (
+        <p class="payment text-white text-[1.75rem] leading-none">
+          {formatAmd(heroPrice, lang)}<span class="text-sm text-white/55 font-medium"> ֏</span>
+        </p>
+      )}
+    </div>
+  </div>
+</section>
+
+{heroCar.data.imageCredit && (
+  <p class="shell pt-3 text-[0.6875rem] text-dim">{heroCar.data.imageCredit}</p>
+)}
+
+<!-- Who the dealership is, set as a single quiet paragraph. No band, no
+     tint, no icons — the photograph above did the persuading. -->
+<section class="shell pt-20 pb-4 max-w-4xl" data-reveal>
+  <p class="label">{t('about.eyebrow')}</p>
+  <h2 class="display text-[clamp(1.5rem,3vw,2.25rem)] mt-5 max-w-[24ch]">{t('about.title')}</h2>
+  <p class="mt-6 text-lg leading-relaxed text-ink-2 max-w-[54ch]">{t('about.lede')}</p>
+  <ul class="mt-9 flex flex-wrap gap-x-8 gap-y-2 label !text-ink">
+    {services.map((s) => <li>{s}</li>)}
+  </ul>
+</section>
+
+<!-- The sequence begins. Three here; the rest at /cars in the same form. -->
+<section class="mt-16">
+  <div class="shell flex items-baseline justify-between gap-4 pb-2">
+    <h2 class="label">{t('cars.title')}</h2>
+    <a href={previewPath(design, lang, '/cars')} class="link">{t('cta.viewAll')} →</a>
+  </div>
+
+  {featured.map((car, i) => (
+    <Card car={car} lang={lang} design={design} financing={site.financing} maxRange={max} index={i} />
+  ))}
+</section>
+
+<section class="border-t border-line" data-reveal>
+  <div class="shell py-20 grid gap-10 lg:grid-cols-2 lg:items-end">
+    <div>
+      <h2 class="display text-[clamp(1.5rem,3vw,2.25rem)] max-w-[18ch]">{t('contact.title')}</h2>
+      <p class="mt-5 text-ink-2 leading-relaxed max-w-[38ch]">{pick(site.address, lang)}</p>
+      <p class="text-ink-2">{pick(site.hours, lang)}</p>
+    </div>
+    <div class="flex flex-wrap gap-x-10 gap-y-4 lg:justify-end">
+      {site.phones.map((p) => (
+        <a href={`tel:${p.replace(/[^+\d]/g, '')}`} class="font-data text-lg no-underline hover:text-signal">{p}</a>
+      ))}
+      <a href={previewPath(design, lang, '/contact')} class="link">{t('nav.contact')} →</a>
+    </div>
+  </div>
+</section>

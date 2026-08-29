@@ -1,0 +1,89 @@
+---
+/**
+ * Contact page body, shared by every design preview. Display-only by design:
+ * phone, WhatsApp, email, address, hours, map, social. There is no enquiry
+ * form anywhere on this site and none of the directions add one.
+ */
+import { getEntry } from 'astro:content';
+import Icon from '../Icon.astro';
+import { useTranslations, pick, type Lang } from '../../i18n/utils';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const site = (await getEntry('settings', 'site'))!.data;
+
+const mapSrc =
+  site.mapEmbed ||
+  `https://www.google.com/maps?q=${encodeURIComponent(site.address.en)}&hl=${lang}&z=15&output=embed`;
+---
+
+<section class="shell py-12 sm:py-16">
+  <h1 class="text-title border-b border-line pb-5">{t('contact.title')}</h1>
+
+  <div class="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-3xl">
+    <div>
+      <p class="eyebrow text-ink-2">{t('contact.phone')}</p>
+      <ul class="mt-2 space-y-1.5">
+        {site.phones.map((p) => (
+          <li>
+            <a href={`tel:${p.replace(/[^+\d]/g, '')}`} class="inline-flex items-center gap-2 font-data no-underline hover:text-signal">
+              <Icon name="phone" size={15} />{p}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <a href={`https://wa.me/${site.whatsapp}`} rel="noopener" class="inline-flex items-center gap-2 mt-3 text-sm text-signal no-underline">
+        <Icon name="whatsapp" size={16} />WhatsApp
+      </a>
+    </div>
+
+    <div>
+      <p class="eyebrow text-ink-2">{t('contact.address')}</p>
+      <p class="mt-2 leading-relaxed">{pick(site.address, lang)}</p>
+      <a href={site.mapUrl} rel="noopener" class="inline-flex items-center gap-2 mt-2 text-sm text-signal no-underline">
+        <Icon name="map-pin" size={15} />{t('contact.map')}
+      </a>
+    </div>
+
+    <div>
+      <p class="eyebrow text-ink-2">{t('contact.hours')}</p>
+      <p class="mt-2">{pick(site.hours, lang)}</p>
+    </div>
+
+    <div>
+      <p class="eyebrow text-ink-2">Email</p>
+      <p class="mt-2">
+        <a href={`mailto:${site.email}`} class="inline-flex items-center gap-2 no-underline hover:text-signal">
+          <Icon name="mail" size={15} />{site.email}
+        </a>
+      </p>
+    </div>
+
+    <div>
+      <p class="eyebrow text-ink-2 mb-3">Social</p>
+      <div class="flex gap-3">
+        <a href={site.social.facebook} rel="noopener" aria-label="Facebook" class="p-2.5 border border-line hover:border-ink hover:text-signal transition-colors"><Icon name="facebook" size={18} /></a>
+        <a href={site.social.instagram} rel="noopener" aria-label="Instagram" class="p-2.5 border border-line hover:border-ink hover:text-signal transition-colors"><Icon name="instagram" size={18} /></a>
+        <a href={site.social.linkedin} rel="noopener" aria-label="LinkedIn" class="p-2.5 border border-line hover:border-ink hover:text-signal transition-colors"><Icon name="linkedin" size={18} /></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-12">
+    <p class="eyebrow text-ink-2 mb-4">{t('contact.findUs')}</p>
+    <div class="aspect-[16/10] sm:aspect-[21/9] border border-line overflow-hidden bg-mist">
+      <iframe
+        src={mapSrc}
+        title={pick(site.address, lang)}
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        class="w-full h-full"
+        style="border:0"
+      ></iframe>
+    </div>
+    <a href={site.mapUrl} rel="noopener" class="inline-flex items-center gap-2 mt-3 text-sm text-signal no-underline">
+      <Icon name="external" size={14} />{t('contact.map')}
+    </a>
+  </div>
+</section>
