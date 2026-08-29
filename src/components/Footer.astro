@@ -1,84 +1,104 @@
 ---
+/**
+ * Footer as one card, matching the header. Display-only contact — this site
+ * has no enquiry form of any kind, by the client's instruction.
+ */
 import { getEntry } from 'astro:content';
-import { useTranslations, pick, type Lang } from '../i18n/utils';
+import { localePath, useTranslations, pick, type Lang } from '../i18n/utils';
 import Icon from './Icon.astro';
 import Logo from './Logo.astro';
 
 interface Props { lang: Lang }
 const { lang } = Astro.props;
 const t = useTranslations(lang);
-
 const site = (await getEntry('settings', 'site'))!.data;
-const year = new Date().getFullYear();
+
+const nav = [
+  { href: '/cars', label: t('nav.cars') },
+  { href: '/financing', label: t('nav.financing') },
+  { href: '/contact', label: t('nav.contact') },
+];
 
 const social = [
-  { name: 'facebook' as const, label: 'Facebook', href: site.social.facebook },
-  { name: 'instagram' as const, label: 'Instagram', href: site.social.instagram },
-  { name: 'linkedin' as const, label: 'LinkedIn', href: site.social.linkedin },
+  { href: site.social.facebook, name: 'facebook' as const, label: 'Facebook' },
+  { href: site.social.instagram, name: 'instagram' as const, label: 'Instagram' },
+  { href: site.social.linkedin, name: 'linkedin' as const, label: 'LinkedIn' },
 ];
 ---
 
-<footer class="mt-auto bg-wash text-ink border-t border-line">
-  <div class="h-[3px]" style="background:var(--gradient-brand)" aria-hidden="true"></div>
-  <div class="shell py-14 sm:py-16 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-    <div>
-      <p class="flex items-center gap-2.5 font-data font-bold tracking-[0.2em] text-sm uppercase">
-        <Logo size={24} />
-        <span><span class="wordmark-brand">Ucar</span> <span class="text-ink-2 font-normal">Motors</span></span>
-      </p>
-      <p class="mt-4 text-sm leading-relaxed text-ink-2">{pick(site.address, lang)}</p>
-      <a href={site.mapUrl} rel="noopener" class="inline-flex items-center gap-2 mt-3 text-sm text-ink no-underline hover:text-signal">
-        <Icon name="map-pin" size={15} />{t('contact.map')}
-      </a>
-    </div>
+<footer class="px-3 pb-3 mt-16 sm:mt-24">
+  <div class="shell !px-0">
+    <div class="card p-7 sm:p-10">
+      <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1.1fr]">
+        <div>
+          <div class="flex items-center gap-2.5">
+            <Logo size={26} />
+            <span class="flex items-baseline gap-1.5 text-[0.9375rem] tracking-[-0.03em]">
+              <span class="wordmark-brand font-extrabold">UCAR</span>
+              <span class="font-bold text-ink-2">MOTORS</span>
+            </span>
+          </div>
+          <p class="mt-4 text-sm leading-relaxed text-ink-2 max-w-[32ch]">{t('hero.lede')}</p>
+          <div class="mt-5 flex gap-2">
+            {social.map((s) => (
+              <a
+                href={s.href}
+                rel="noopener"
+                aria-label={s.label}
+                class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-page text-ink-2 hover:text-signal hover:bg-mist transition-colors"
+              >
+                <Icon name={s.name} size={18} />
+              </a>
+            ))}
+          </div>
+        </div>
 
-    <div>
-      <p class="eyebrow text-ink-2 mb-4">{t('contact.phone')}</p>
-      <ul class="space-y-2">
-        {site.phones.map((p) => (
-          <li>
-            <a href={`tel:${p.replace(/[^+\d]/g, '')}`} class="inline-flex items-center gap-2 text-sm font-data no-underline hover:text-signal">
-              <Icon name="phone" size={14} />{p}
-            </a>
-          </li>
-        ))}
-        <li>
-          <a href={`mailto:${site.email}`} class="inline-flex items-center gap-2 text-sm no-underline hover:text-signal">
-            <Icon name="mail" size={14} />{site.email}
+        <nav aria-label="Footer">
+          <p class="label">Ucar Motors</p>
+          <ul class="mt-3 space-y-2 list-none p-0">
+            {nav.map((item) => (
+              <li>
+                <a href={localePath(lang, item.href)} class="text-sm font-semibold no-underline text-ink-2 hover:text-signal transition-colors">
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div>
+          <p class="label">{t('contact.phone')}</p>
+          <ul class="mt-3 space-y-2 list-none p-0">
+            {site.phones.map((p) => (
+              <li>
+                <a href={`tel:${p.replace(/[^+\d]/g, '')}`} class="text-sm font-semibold no-underline text-ink-2 hover:text-signal transition-colors">{p}</a>
+              </li>
+            ))}
+          </ul>
+          <a href={`https://wa.me/${site.whatsapp}`} rel="noopener" class="inline-flex items-center gap-2 mt-3 text-sm font-semibold no-underline text-signal">
+            <Icon name="whatsapp" size={15} />WhatsApp
           </a>
-        </li>
-      </ul>
-    </div>
+          <p class="mt-3">
+            <a href={`mailto:${site.email}`} class="text-sm font-semibold no-underline text-ink-2 hover:text-signal transition-colors">{site.email}</a>
+          </p>
+        </div>
 
-    <div>
-      <p class="eyebrow text-ink-2 mb-4">{t('contact.hours')}</p>
-      <p class="text-sm text-ink-2">{pick(site.hours, lang)}</p>
-      <a
-        href={`https://wa.me/${site.whatsapp}`}
-        rel="noopener"
-        class="inline-flex items-center gap-2 mt-3 text-sm text-ink no-underline hover:text-signal"
-      >
-        <Icon name="whatsapp" size={16} />WhatsApp
-      </a>
-    </div>
+        <div>
+          <p class="label">{t('contact.address')}</p>
+          <p class="mt-3 text-sm leading-relaxed text-ink-2">{pick(site.address, lang)}</p>
+          <p class="mt-2 inline-flex items-center gap-2 text-sm text-ink-2">
+            <Icon name="clock" size={15} class="text-dim" />{pick(site.hours, lang)}
+          </p>
+          <a href={site.mapUrl} rel="noopener" class="inline-flex items-center gap-2 mt-3 text-sm font-semibold no-underline text-signal">
+            <Icon name="map-pin" size={15} />{t('contact.map')}
+          </a>
+        </div>
+      </div>
 
-    <div>
-      <p class="eyebrow text-ink-2 mb-4">Social</p>
-      <ul class="space-y-2 text-sm">
-        {social.map((s) => (
-          <li>
-            <a href={s.href} rel="noopener" class="inline-flex items-center gap-2 no-underline text-ink hover:text-signal">
-              <Icon name={s.name} size={16} />{s.label}
-            </a>
-          </li>
-        ))}
-      </ul>
+      <div class="mt-10 pt-6 border-t border-line flex flex-wrap items-center justify-between gap-3">
+        <p class="text-xs text-ink-2">© {new Date().getFullYear()} Ucar Motors · {t('footer.rights')}</p>
+        <p class="text-xs text-ink-2">ՅՈՒՔԱՐ ՍՊԸ</p>
+      </div>
     </div>
-  </div>
-
-  <div class="shell pb-8">
-    <hr class="border-0 border-t border-line mb-6" />
-    <p class="eyebrow text-ink-2">© {year} Ucar Motors · {t('footer.rights')}</p>
-    <p class="mt-3 text-xs leading-relaxed text-ink-2 max-w-[60ch]">{t('credit.photos')}</p>
   </div>
 </footer>

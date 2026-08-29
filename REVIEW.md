@@ -1,16 +1,42 @@
 # Review — visual direction, then designer / developer / UX
 
-> **2026-08-29 update.** The palette below (graphite chrome, signal red) was
-> superseded on the client's direction once their logo arrived: the site is
-> now light-grounded with a cyan→blue→violet **brand gradient**, red kept only
-> for errors. In a later pass the client said there was still "too much
-> black", so the header, footer and mobile bar also went light — the header
-> is white with the gradient hairline as its sticky bottom edge, the footer
-> sits on `wash` (pale indigo). No dark chrome remains; the gradient and the
-> `signal` accent do all the separating. Tokens live in
-> `src/styles/global.css`; rationale in the `visual-direction` memory. The
-> layout and type findings below still hold; the WCAG-AA line in Round 2
-> predates the light-chrome pass and should be re-audited.
+> **2026-08-30 update — superseded by "Daylight".** Everything below describes
+> earlier rounds and is kept as history only. The client reviewed five design
+> directions and chose **Daylight**: white cards on a pale periwinkle ground,
+> one radius, one shadow, one violet action colour, and the brand gradient used
+> only in the logo and as blurred ambient light. The five proposals were built
+> under `/preview/` and removed once the choice was made; they are recoverable
+> at commit `55a39d9`.
+>
+> The palette is no longer eyeballed. It was sampled pixel-by-pixel from Ucar's
+> own Instagram artwork: the logo gradient measures `#43EBFC → #4480F4 →
+> #5716D5` (a true cyan, not the teal used before) and the display violet
+> measures `#5D17F0`, which became `--color-signal` `#5A17EE`.
+>
+> **Contrast, re-audited 2026-08-30** (previous "all pairs pass AA" claims below
+> are stale and predate two palette changes — ignore them):
+>
+> | Pair | Ratio | |
+> |---|---|---|
+> | `ink` on white / on `page` | 19.7 / 18.1 | AAA |
+> | `ink-2` on white / on `page` | 6.8 / 6.3 | AAA |
+> | `signal` on white / on `page` | 7.5 / 6.9 | AAA |
+> | white on `signal` (primary pill) | 7.5 | AAA |
+> | `signal` on `signal-3` (soft pill) | 6.4 | AAA |
+> | white on `ink` (active chip) | 19.7 | AAA |
+> | `charge` on white (available) | 5.4 | AA |
+> | `danger` on white (unverified note) | 5.4 | AA |
+> | `azure` on white | 4.7 | AA — decorative only |
+> | `dim` on white | **3.2** | **fails AA for body text** |
+>
+> `--color-dim` is therefore restricted to decoration, icons and incidental
+> text at large sizes (photo credits, the legal line in the footer). It must
+> not carry body copy. `--color-azure` is decorative only for a different
+> reason: violet is the site's single interactive colour, and a second
+> blue-violet marking things as clickable would erode that.
+>
+> Not re-audited: white-on-photograph, which the design avoids entirely — there
+> is no type over an image anywhere on the site.
 
 ## Round 2 — visual direction rebuilt
 

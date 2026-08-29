@@ -1,37 +1,32 @@
 ---
+/**
+ * Fixed call / WhatsApp bar for phones. Two pills on a floating card, so the
+ * two things a visitor actually does from a phone are always one tap away.
+ *
+ * Hidden from `md` up, where the header's own call pill takes over. The body
+ * reserves its height in `global.css`, including the home-indicator inset.
+ */
 import { getEntry } from 'astro:content';
-import { localePath, useTranslations, type Lang } from '../i18n/utils';
+import { useTranslations, type Lang } from '../i18n/utils';
 import Icon from './Icon.astro';
 
-/**
- * Persistent call / enquiry bar, phones and tablets only.
- *
- * The desktop header carries an enquiry CTA that is hidden below `sm`,
- * which left phone visitors — the majority for an Armenian dealership — with
- * no standing call to action at all. Calling is also the action people
- * actually take for a car purchase, so it gets equal weight here.
- */
 interface Props { lang: Lang }
 const { lang } = Astro.props;
 const t = useTranslations(lang);
-
 const site = (await getEntry('settings', 'site'))!.data;
-const tel = site.phones[0]!.replace(/[^+\d]/g, '');
+const tel = site.phones[0].replace(/[^+\d]/g, '');
 ---
 
 <div
-  class="fixed bottom-0 inset-x-0 z-40 lg:hidden grid grid-cols-2 bg-white border-t border-line shadow-[0_-2px_20px_rgb(15_19_45_/_0.12)]"
-  style="padding-bottom:env(safe-area-inset-bottom)"
+  class="md:hidden fixed inset-x-0 bottom-0 z-40 px-3 pt-2"
+  style="padding-bottom:calc(0.75rem + env(safe-area-inset-bottom))"
 >
-  <a
-    href={`tel:${tel}`}
-    class="flex items-center justify-center gap-2 h-16 text-sm font-semibold no-underline border-r border-line text-ink"
-  >
-    <Icon name="phone" size={15} />
-    {t('cta.call')}
-  </a>
-  <a
-    href={localePath(lang, '/contact')}
-    class="flex items-center justify-center h-16 text-sm font-semibold no-underline bg-signal text-white text-center px-3 leading-tight"
-  >{t('nav.contact')}</a>
+  <div class="card flex items-center gap-2 p-2 shadow-[0_-6px_28px_rgb(24_20_80_/_0.12)]">
+    <a href={`tel:${tel}`} class="pill pill-primary flex-1">
+      <Icon name="phone" size={16} />{t('cta.call')}
+    </a>
+    <a href={`https://wa.me/${site.whatsapp}`} rel="noopener" aria-label="WhatsApp" class="pill pill-ghost !px-4">
+      <Icon name="whatsapp" size={18} />
+    </a>
+  </div>
 </div>

@@ -5,9 +5,11 @@ Astro 5, static output. Production is Cloudflare Pages (`ucarmotors.am`);
 a GitHub Pages test mirror runs at
 `eduardhairapetyan.github.io/ucarmotors-site/`.
 
-Visual direction: white ground with a cyan→blue→violet brand gradient used
-sparingly, one blue-violet accent for actions, red kept for errors only. The
-history and reasoning live in `REVIEW.md`; the tokens are in
+Visual direction — "Daylight": white cards on a pale periwinkle ground, one
+radius, one shadow, and a single violet accent (`#5A17EE`) for every action.
+The brand gradient (`#43EBFC → #4480F4 → #5716D5`) appears only in the logo
+and as blurred ambient light. Colours are sampled from Ucar's own artwork;
+the rules are in `CLAUDE.md`, the history in `REVIEW.md`, the tokens in
 `src/styles/global.css`.
 
 Read **DATA-NOTES.md** before touching anything in `src/content/`.

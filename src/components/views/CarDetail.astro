@@ -3,7 +3,9 @@ import { getEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import CarSilhouette from '../CarSilhouette.astro';
 import PaymentCalculator from '../PaymentCalculator.astro';
-import { priceOf, type Car } from '../../lib/catalog';
+import CarCard from '../CarCard.astro';
+import Icon from '../Icon.astro';
+import { getCars, maxRange, priceOf, type Car } from '../../lib/catalog';
 import { localePath, asset, useTranslations, pick, formatAmd, type Lang } from '../../i18n/utils';
 
 interface Props { lang: Lang; car: Car }
@@ -11,10 +13,13 @@ const { lang, car } = Astro.props;
 const t = useTranslations(lang);
 
 const site = (await getEntry('settings', 'site'))!.data;
+const all = await getCars();
+const max = maxRange(all);
 const d = car.data;
 const name = `${d.brand} ${d.model}`;
 const price = priceOf(car);
 const blurb = pick(d.description, lang);
+const tel = site.phones[0].replace(/[^+\d]/g, '');
 
 const facts = [
   d.rangeKm && { label: t('car.range'), value: `${d.rangeKm} km` },
@@ -28,9 +33,17 @@ const specRows = d.specs.map((s) => ({ label: pick(s.label, lang), value: s.valu
 const allSpecs = [...facts, ...specRows];
 const hasTabs = Boolean(blurb) || allSpecs.length > 0 || d.colors.length > 0;
 
+// Same brand first, then anything else, so "more like this" means something.
+const related = [
+  ...all.filter((c) => c.id !== car.id && c.data.brand === d.brand),
+  ...all.filter((c) => c.id !== car.id && c.data.brand !== d.brand),
+].slice(0, 3);
+
+const siteHref = new URL(import.meta.env.BASE_URL, Astro.site).href;
+
 // Only advertise an Offer to search engines when the price is one we stand
 // behind. An unverified figure must not leak into structured data.
-const schema = {
+const vehicle = {
   '@type': 'Vehicle',
   name,
   brand: { '@type': 'Brand', name: d.brand },
@@ -43,128 +56,182 @@ const schema = {
           price,
           priceCurrency: 'AMD',
           availability: d.status === 'available' ? 'https://schema.org/InStock' : 'https://schema.org/PreOrder',
-          seller: { '@id': `${new URL(import.meta.env.BASE_URL, Astro.site).href}#dealer` },
+          seller: { '@id': `${siteHref}#dealer` },
         },
       }
     : {}),
 };
+
+const breadcrumbs = {
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Ucar Motors', item: new URL(localePath(lang, '/'), Astro.site).href },
+    { '@type': 'ListItem', position: 2, name: t('cars.title'), item: new URL(localePath(lang, '/cars'), Astro.site).href },
+    { '@type': 'ListItem', position: 3, name },
+  ],
+};
 ---
 
-<Base lang={lang} title={name} description={blurb || `${name} — Ucar Motors`} schema={schema}>
-  <!-- Light hero: car as key visual, price then payment. -->
-  <section class="relative overflow-hidden bg-mist">
-    <div
-      class="pointer-events-none absolute -top-48 -left-40 h-[40rem] w-[40rem] rounded-full opacity-20 blur-3xl"
-      style="background:var(--gradient-brand)"
-      aria-hidden="true"
-    ></div>
+<Base lang={lang} title={name} description={blurb || `${name} — Ucar Motors`} schema={[vehicle, breadcrumbs]}>
+  <section class="shell pt-6 pb-2">
+    <nav aria-label="Breadcrumb">
+      <ol class="flex items-center gap-2 text-xs font-bold text-ink-2 list-none p-0 flex-wrap">
+        <li><a href={localePath(lang, '/')} class="no-underline hover:text-signal transition-colors">Ucar Motors</a></li>
+        <li aria-hidden="true" class="text-dim">/</li>
+        <li><a href={localePath(lang, '/cars')} class="no-underline hover:text-signal transition-colors">{t('cars.title')}</a></li>
+        <li aria-hidden="true" class="text-dim">/</li>
+        <li aria-current="page" class="text-ink">{name}</li>
+      </ol>
+    </nav>
+  </section>
 
-    <div class="shell relative pt-6 pb-14 sm:pb-20">
-      <a href={localePath(lang, '/cars')} class="eyebrow no-underline text-ink-2 hover:text-ink">← {t('cars.title')}</a>
-
-      <div class="grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:gap-14 mt-6 lg:items-center">
-        <div>
-          <div class="aspect-[16/9] bg-white overflow-hidden ring-1 ring-line">
-            {d.images.length > 0 ? (
-              <img src={asset(d.images[0])} alt={name} width="900" height="506" class="w-full h-full object-cover" />
-            ) : (
-              <CarSilhouette body={d.bodyType} tone="light" class="w-full h-full" />
-            )}
-          </div>
-
-          {d.images.length > 0 && d.imageCredit && (
-            <p class="mt-2 text-[0.6875rem] text-ink-2">{d.imageCredit}</p>
-          )}
-
-          {d.images.length > 1 && (
-            <div class="grid grid-cols-4 gap-2 mt-2">
-              {d.images.slice(1, 5).map((src, i) => (
-                <img src={asset(src)} alt={`${name} ${i + 2}`} loading="lazy" width="220" height="124" class="aspect-[16/9] object-cover ring-1 ring-line" />
-              ))}
-            </div>
+  <section class="shell pb-4">
+    <div class="grid gap-6 lg:grid-cols-[1.2fr_1fr] lg:gap-8 items-start">
+      <div class="card p-3 sm:p-4">
+        <div class="inset aspect-[16/9]">
+          {d.images.length > 0 ? (
+            <img src={asset(d.images[0])} alt={name} width="960" height="540" class="w-full h-full object-cover" />
+          ) : (
+            <CarSilhouette body={d.bodyType} tone="light" class="w-full h-full" />
           )}
         </div>
 
-        <div>
-          <p class="eyebrow text-signal">{t(`power.${d.powertrain}` as 'power.electric')}</p>
-          <h1 class="text-title mt-3 text-ink">
-            {name}{d.year ? <span class="text-ink-2 font-normal"> {d.year}</span> : null}
-          </h1>
-          <p class="eyebrow mt-3 text-charge">{t(`status.${d.status}` as 'status.available')}</p>
-
-          <div class="mt-8 border-t border-line pt-6">
-            {price !== null ? (
-              <>
-                <p class="eyebrow text-ink-2 mb-2">{t('car.price')}</p>
-                <p class="payment text-ink text-4xl sm:text-5xl">
-                  {formatAmd(price, lang)}<span class="text-xl text-ink-2 font-medium"> ֏</span>
-                </p>
-                <div class="mt-6 pt-5 border-t border-line">
-                  <p class="eyebrow text-ink-2 mb-3">{t('calc.title')}</p>
-                  <PaymentCalculator price={price} financing={site.financing} lang={lang} size="sm" tone="light" id={car.id} />
-                </div>
-              </>
-            ) : (
-              <p class="eyebrow text-ink-2">{t('car.onRequest')}</p>
-            )}
+        {d.images.length > 1 && (
+          <div class="grid grid-cols-4 gap-2 mt-2">
+            {d.images.slice(1, 5).map((src, i) => (
+              <img
+                src={asset(src)}
+                alt={`${name} ${i + 2}`}
+                loading="lazy"
+                width="220"
+                height="124"
+                class="inset aspect-[16/9] object-cover w-full"
+              />
+            ))}
           </div>
+        )}
+
+        <!-- Licence-required visible credit for the Wikimedia stand-in photo.
+             It comes out when Ucar supply their own photography, and not
+             before. -->
+        {d.images.length > 0 && d.imageCredit && (
+          <p class="px-2 pt-3 pb-1 text-[0.6875rem] leading-relaxed text-ink-2">{d.imageCredit}</p>
+        )}
+      </div>
+
+      <div class="card p-7 sm:p-8">
+        <div class="flex items-center gap-3 flex-wrap">
+          <span class="pill pill-soft pill-sm !min-h-8 !px-3 !text-xs">
+            {t(`power.${d.powertrain}` as 'power.electric')}
+          </span>
+          <span class:list={['status', d.status === 'available' && 'status-available']}>
+            {t(`status.${d.status}` as 'status.available')}
+          </span>
+        </div>
+
+        <h1 class="text-title mt-4">
+          {name}{d.year ? <span class="text-ink-2 font-bold"> {d.year}</span> : null}
+        </h1>
+
+        {blurb && <p class="mt-4 leading-relaxed text-ink-2">{blurb}</p>}
+
+        <div class="mt-7 pt-7 border-t border-line">
+          {price !== null ? (
+            <>
+              <p class="label">{t('car.price')}</p>
+              <p class="payment text-4xl sm:text-5xl mt-2">
+                {formatAmd(price, lang)}<span class="text-xl text-ink-2 font-bold"> ֏</span>
+              </p>
+
+              <div class="mt-7 pt-6 border-t border-line">
+                <p class="label mb-4">{t('calc.title')}</p>
+                <PaymentCalculator price={price} financing={site.financing} lang={lang} size="sm" tone="light" id={car.id} />
+              </div>
+            </>
+          ) : (
+            <>
+              <p class="text-lg font-extrabold tracking-[-0.03em]">{t('car.onRequest')}</p>
+              <p class="mt-2 text-sm text-ink-2 leading-relaxed max-w-[38ch]">{t('calc.note')}</p>
+            </>
+          )}
+        </div>
+
+        <div class="mt-7 flex flex-wrap gap-3">
+          <a href={`tel:${tel}`} class="pill pill-primary flex-1 sm:flex-none">
+            <Icon name="phone" size={15} />{t('cta.call')}
+          </a>
+          <a href={`https://wa.me/${site.whatsapp}`} rel="noopener" class="pill pill-ghost flex-1 sm:flex-none">
+            <Icon name="whatsapp" size={16} />WhatsApp
+          </a>
         </div>
       </div>
     </div>
   </section>
 
   {hasTabs && (
-    <section class="shell py-14 sm:py-20" data-reveal>
-      <car-tabs class="block">
-        <div role="tablist" aria-label={name} class="flex gap-7 border-b border-line">
-          <button
-            type="button" role="tab"
-            id={`tab-specs-${car.id}`} aria-controls={`panel-specs-${car.id}`}
-            aria-selected="true" class="tab"
-          >{t('car.specs')}</button>
-          {blurb && (
+    <section class="shell pt-10 sm:pt-14" data-reveal>
+      <div class="card p-7 sm:p-9">
+        <car-tabs class="block">
+          <div role="tablist" aria-label={name} class="flex gap-7 border-b border-line">
             <button
               type="button" role="tab"
-              id={`tab-about-${car.id}`} aria-controls={`panel-about-${car.id}`}
-              aria-selected="false" class="tab"
-            >{t('tab.about')}</button>
-          )}
-        </div>
+              id={`tab-specs-${car.id}`} aria-controls={`panel-specs-${car.id}`}
+              aria-selected="true" class="tab"
+            >{t('car.specs')}</button>
+            {blurb && (
+              <button
+                type="button" role="tab"
+                id={`tab-about-${car.id}`} aria-controls={`panel-about-${car.id}`}
+                aria-selected="false" class="tab"
+              >{t('tab.about')}</button>
+            )}
+          </div>
 
-        <div
-          role="tabpanel" id={`panel-specs-${car.id}`}
-          aria-labelledby={`tab-specs-${car.id}`} class="pt-8"
-        >
-          {allSpecs.length > 0 ? (
-            <dl class="grid grid-cols-2 sm:grid-cols-4 gap-px bg-line border border-line">
-              {allSpecs.map((f) => (
-                <div class="bg-white p-5">
-                  <dt class="eyebrow text-ink-2">{f.label}</dt>
-                  <dd class="font-data text-xl mt-2">{f.value}</dd>
-                </div>
-              ))}
-            </dl>
-          ) : (
-            <p class="text-ink-2 max-w-[46ch]">{t('car.specsPending')}</p>
-          )}
+          <div role="tabpanel" id={`panel-specs-${car.id}`} aria-labelledby={`tab-specs-${car.id}`} class="pt-7">
+            {allSpecs.length > 0 ? (
+              <dl class="grid gap-3 grid-cols-2 lg:grid-cols-4">
+                {allSpecs.map((s) => (
+                  <div class="rounded-[12px] bg-page p-4">
+                    <dt class="label">{s.label}</dt>
+                    <dd class="font-data text-lg font-bold mt-1.5">{s.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : (
+              <p class="text-ink-2 max-w-[46ch] leading-relaxed">{t('car.specsPending')}</p>
+            )}
 
-          {d.colors.length > 0 && (
-            <div class="mt-6">
-              <p class="eyebrow text-ink-2 mb-2">{t('car.colors')}</p>
-              <p class="text-sm">{d.colors.join(' · ')}</p>
+            {d.colors.length > 0 && (
+              <div class="mt-6 pt-6 border-t border-line">
+                <p class="label mb-2">{t('car.colors')}</p>
+                <p class="text-sm">{d.colors.join(' · ')}</p>
+              </div>
+            )}
+          </div>
+
+          {blurb && (
+            <div role="tabpanel" id={`panel-about-${car.id}`} aria-labelledby={`tab-about-${car.id}`} class="pt-7">
+              <p class="leading-relaxed text-ink-2 max-w-[60ch]">{blurb}</p>
             </div>
           )}
-        </div>
+        </car-tabs>
+      </div>
+    </section>
+  )}
 
-        {blurb && (
-          <div
-            role="tabpanel" id={`panel-about-${car.id}`}
-            aria-labelledby={`tab-about-${car.id}`} class="pt-8"
-          >
-            <p class="leading-relaxed text-ink-2 max-w-[60ch]">{blurb}</p>
-          </div>
-        )}
-      </car-tabs>
+  {related.length > 0 && (
+    <section class="shell pt-14 sm:pt-20" data-reveal>
+      <div class="flex items-end justify-between gap-4 flex-wrap">
+        <h2 class="text-title">{t('cars.title')}</h2>
+        <a href={localePath(lang, '/cars')} class="pill pill-ghost pill-sm">
+          {t('cta.viewAll')}<Icon name="arrow-right" size={15} />
+        </a>
+      </div>
+      <div class="grid gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-8">
+        {related.map((c, i) => (
+          <CarCard car={c} lang={lang} financing={site.financing} maxRange={max} index={i} />
+        ))}
+      </div>
     </section>
   )}
 

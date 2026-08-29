@@ -70,6 +70,7 @@ export const ui = {
     'footer.rights': 'Բոլոր իրավունքները պաշտպանված են',
     'skip': 'Անցնել բովանդակությանը',
     'lang.label': 'Լեզու',
+    'nav.menu': 'Մենյու',
   },
   ru: {
     'nav.cars': 'Автомобили',
@@ -134,6 +135,7 @@ export const ui = {
     'footer.rights': 'Все права защищены',
     'skip': 'Перейти к содержанию',
     'lang.label': 'Язык',
+    'nav.menu': 'Меню',
   },
   en: {
     'nav.cars': 'Cars',
@@ -198,6 +200,7 @@ export const ui = {
     'footer.rights': 'All rights reserved',
     'skip': 'Skip to content',
     'lang.label': 'Language',
+    'nav.menu': 'Menu',
   },
 } as const;
 

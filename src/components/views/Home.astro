@@ -3,125 +3,229 @@ import { getEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import CarCard from '../CarCard.astro';
 import CarSilhouette from '../CarSilhouette.astro';
+import PaymentCalculator from '../PaymentCalculator.astro';
 import Icon from '../Icon.astro';
 import { getCars, getFeatured, maxRange, entryPrice, priceOf } from '../../lib/catalog';
-import { localePath, asset, useTranslations, pick, formatAmd, type Lang } from '../../i18n/utils';
+import { localePath, asset, useTranslations, pick, formatAmd, monthlyPayment, type Lang } from '../../i18n/utils';
 
 interface Props { lang: Lang }
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 
 const site = (await getEntry('settings', 'site'))!.data;
+const f = site.financing;
 const cars = await getCars();
 const featured = await getFeatured(3);
 const max = maxRange(cars);
 const entry = entryPrice(cars);
-
-const services = [
-  t('svc.sales'),
-  t('svc.charging'),
-  t('svc.warranty'),
-  t('svc.service'),
-  t('svc.financing'),
-];
+const tel = site.phones[0].replace(/[^+\d]/g, '');
 
 // The hero anchors on a real car at a real price rather than an abstract
 // "from" figure, so the number on screen is one you can go and buy.
 const heroCar = entry?.car ?? featured[0]!;
 const heroPrice = entry?.price ?? priceOf(heroCar);
+const heroMonthly = heroPrice ? monthlyPayment(heroPrice, f.defaultDownPercent, f.defaultTermYears, f.ratePercent) : null;
 const heroName = `${heroCar.data.brand} ${heroCar.data.model}`;
+
+const services = [
+  { icon: 'car' as const, label: t('svc.sales') },
+  { icon: 'bolt' as const, label: t('svc.charging') },
+  { icon: 'shield' as const, label: t('svc.warranty') },
+  { icon: 'wrench' as const, label: t('svc.service') },
+  { icon: 'card' as const, label: t('svc.financing') },
+];
+
+// Prefer the exact pin pasted in the CMS; otherwise geocode the street
+// address (English query — Google resolves the Latin form reliably). Either
+// way the map has to be told which language to label itself in, or a pinned
+// URL renders its controls in whatever Google guesses.
+const mapBase =
+  site.mapEmbed ||
+  `https://www.google.com/maps?q=${encodeURIComponent(site.address.en)}&z=15&output=embed`;
+const mapSrc = mapBase.includes('hl=') ? mapBase : `${mapBase}&hl=${lang}`;
 ---
 
 <Base lang={lang} title={t('hero.title')} description={t('hero.lede')}>
-  <!-- Light hero. The brand mark reads on white, so the page opens the way
-       the logo does — bright, with the gradient as the one colour event. -->
-  <section class="relative overflow-hidden bg-mist">
-    <div
-      class="pointer-events-none absolute -top-48 -right-40 h-[42rem] w-[42rem] rounded-full opacity-25 blur-3xl"
-      style="background:var(--gradient-brand)"
-      aria-hidden="true"
-    ></div>
+  <!-- Hero. Centred and lit from behind by the brand gradient, blurred: the
+       only place the full gradient appears outside the logo. -->
+  <section class="relative overflow-hidden">
+    <div class="spill -top-52 left-1/2 -translate-x-1/2 h-[32rem] w-[56rem]" aria-hidden="true"></div>
 
-    <div class="shell relative pt-8 pb-12 sm:pt-14 lg:pt-20 lg:pb-20">
-      <div class="grid gap-8 lg:gap-14 lg:grid-cols-[0.95fr_1.15fr] lg:items-center">
-        <div>
-          <p class="eyebrow text-signal">{t('hero.eyebrow')}</p>
-          <h1 class="text-hero mt-5 text-ink">{t('hero.title')}</h1>
-          <p class="mt-5 leading-relaxed text-ink-2 max-w-[46ch]">{t('hero.lede')}</p>
-          <div class="mt-8 flex flex-col sm:flex-row gap-3">
-            <a href={localePath(lang, '/cars')} class="btn btn-primary w-full sm:w-auto">{t('nav.cars')}</a>
-            <a href={localePath(lang, '/contact')} class="btn btn-on-light hidden lg:inline-flex">{t('nav.contact')}</a>
-          </div>
-        </div>
+    <div class="shell relative pt-10 pb-2 sm:pt-16 text-center">
+      <p class="rise inline-flex items-center gap-2 pill pill-soft pill-sm !font-bold">
+        <Icon name="bolt" size={14} />{t('hero.eyebrow')}
+      </p>
 
-        <a href={localePath(lang, `/cars/${heroCar.id}`)} class="block no-underline">
-          <div class="aspect-[2/1] sm:aspect-[16/10] bg-white overflow-hidden ring-1 ring-line">
+      <h1 class="rise text-hero mt-6 max-w-[17ch] mx-auto" style="--d:70ms">{t('hero.title')}</h1>
+      <p class="rise mt-5 text-lede leading-relaxed text-ink-2 max-w-[46ch] mx-auto" style="--d:140ms">{t('hero.lede')}</p>
+
+      <div class="rise mt-8 flex flex-wrap justify-center gap-3" style="--d:210ms">
+        <a href={localePath(lang, '/cars')} class="pill pill-primary">
+          {t('nav.cars')}<Icon name="arrow-right" size={16} />
+        </a>
+        <a href={`tel:${tel}`} class="pill pill-ghost">
+          <Icon name="phone" size={15} />{t('cta.call')}
+        </a>
+      </div>
+
+      <!-- The lead car, presented as one object on a table rather than a
+           full-bleed poster: a borrowed stock photo is framed, not blown up. -->
+      <div class="rise traced mt-14 max-w-3xl mx-auto" style="--d:290ms">
+        <div class="card p-3 sm:p-4 text-left">
+          <a href={localePath(lang, `/cars/${heroCar.id}`)} class="inset block aspect-[16/9] no-underline">
             {heroCar.data.images.length > 0 ? (
-              <img src={asset(heroCar.data.images[0])} alt={heroName} width="1000" height="625" class="w-full h-full object-cover" />
+              <img src={asset(heroCar.data.images[0])} alt={heroName} width="960" height="540" class="w-full h-full object-cover" />
             ) : (
               <CarSilhouette body={heroCar.data.bodyType} tone="light" class="w-full h-full" />
             )}
-          </div>
-          <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 mt-4">
-            <h2 class="text-lg font-semibold text-ink">{heroName}</h2>
-            {heroPrice !== null ? (
-              <span class="font-data text-sm text-ink-2 whitespace-nowrap">{t('cta.from')} {formatAmd(heroPrice, lang)} ֏</span>
+          </a>
+
+          <div class="flex flex-wrap items-center justify-between gap-4 px-2 sm:px-3 py-4">
+            <div>
+              <p class="text-xl font-extrabold tracking-[-0.03em]">
+                <a href={localePath(lang, `/cars/${heroCar.id}`)} class="no-underline">{heroName}</a>
+              </p>
+              <p class:list={['status mt-1.5', heroCar.data.status === 'available' && 'status-available']}>
+                {t(`status.${heroCar.data.status}` as 'status.available')}
+                {heroCar.data.rangeKm && <span class="text-ink-2 font-semibold">· {heroCar.data.rangeKm} km</span>}
+              </p>
+            </div>
+
+            {heroMonthly !== null ? (
+              <span class="pill pill-money">
+                <b>{formatAmd(heroMonthly, lang)}</b>
+                <span class="text-ink-2 font-semibold">{t('calc.perMonth')}</span>
+              </span>
             ) : (
-              <span class="eyebrow text-charge">{t(`status.${heroCar.data.status}` as 'status.available')}</span>
+              <a href={`tel:${tel}`} class="pill pill-primary">{t('cta.call')}</a>
             )}
           </div>
-        </a>
+        </div>
       </div>
+
+      {heroCar.data.imageCredit && (
+        <p class="mt-4 text-[0.6875rem] text-ink-2">{heroCar.data.imageCredit}</p>
+      )}
     </div>
   </section>
 
-  <!-- Who Ucar Motors is and what they do, sourced from the showroom's own
-       service list. A tinted band so the page has a colour beat, not just
-       black and white. -->
-  <section class="bg-wash border-y border-line">
-    <div class="shell py-16 sm:py-20" data-reveal>
-      <p class="eyebrow text-signal">{t('about.eyebrow')}</p>
-      <h2 class="text-title mt-4 max-w-[22ch] text-ink">{t('about.title')}</h2>
-      <p class="mt-5 text-ink-2 leading-relaxed max-w-[54ch]">{t('about.lede')}</p>
-      <div class="mt-10 h-[3px] w-24" style="background:var(--gradient-brand)" aria-hidden="true"></div>
-      <ul class="mt-8 grid gap-x-10 gap-y-4 text-sm sm:grid-cols-2 lg:grid-cols-3 max-w-3xl">
-        {services.map((s, i) => (
-          <li data-reveal style={`--reveal-delay:${i * 60}ms`}>{s}</li>
-        ))}
-      </ul>
-    </div>
+  <!-- What the showroom does, from its own service list. -->
+  <section class="shell pt-16 sm:pt-24" data-reveal>
+    <ul class="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-5 list-none p-0">
+      {services.map((s, i) => (
+        <li
+          class="card card-hover p-5 flex flex-col gap-3"
+          data-reveal
+          style={`--reveal-delay:${i * 60}ms`}
+        >
+          <span class="badge"><Icon name={s.icon} size={17} /></span>
+          <span class="text-sm font-bold leading-snug">{s.label}</span>
+        </li>
+      ))}
+    </ul>
   </section>
 
-  <!-- Catalogue on white: prices and specs read as a spec sheet. -->
-  <section class="shell py-16 sm:py-24">
-    <div class="flex items-end justify-between gap-4 border-b border-line pb-5 mb-8" data-reveal>
-      <h2 class="text-title">{t('cars.title')}</h2>
-      <a href={localePath(lang, '/cars')} class="eyebrow no-underline text-ink-2 hover:text-ink whitespace-nowrap">
-        {t('cta.viewAll')} →
+  <!-- Catalogue. -->
+  <section class="shell pt-16 sm:pt-24" data-reveal>
+    <div class="flex items-end justify-between gap-4 flex-wrap">
+      <div>
+        <p class="label">{cars.length} {t('cars.count')}</p>
+        <h2 class="text-title mt-1">{t('cars.title')}</h2>
+      </div>
+      <a href={localePath(lang, '/cars')} class="pill pill-ghost pill-sm">
+        {t('cta.viewAll')}<Icon name="arrow-right" size={15} />
       </a>
     </div>
 
-    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="grid gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-8">
       {featured.map((car, i) => (
-        <CarCard car={car} lang={lang} financing={site.financing} maxRange={max} index={i} />
+        <CarCard car={car} lang={lang} financing={f} maxRange={max} index={i} />
       ))}
     </div>
   </section>
 
-  <section class="bg-white border-t border-line">
-    <div class="shell py-16 sm:py-20 flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between lg:gap-16 max-w-5xl" data-reveal>
-      <div>
-        <h2 class="text-title text-ink max-w-[18ch]">{t('contact.title')}</h2>
-        <p class="mt-5 text-ink-2 leading-relaxed max-w-[40ch]">
-          {pick(site.address, lang)} · {pick(site.hours, lang)}
-        </p>
+  <!-- Who Ucar Motors is, beside the live payment calculator: the two
+       questions a buyer actually has, side by side. -->
+  <section class="shell pt-16 sm:pt-24" data-reveal>
+    <div class="grid gap-6 lg:grid-cols-[1.05fr_1fr] lg:gap-8 items-stretch">
+      <div class="card p-8 sm:p-10 flex flex-col">
+        <p class="label">{t('about.eyebrow')}</p>
+        <h2 class="text-title mt-3 max-w-[20ch]">{t('about.title')}</h2>
+        <p class="mt-4 leading-relaxed text-ink-2 max-w-[46ch]">{t('about.lede')}</p>
+
+        <dl class="mt-auto pt-8 grid grid-cols-3 gap-4">
+          <div>
+            <dt class="label capitalize">{t('cars.count')}</dt>
+            <dd class="payment text-2xl mt-1">{cars.length}</dd>
+          </div>
+          <div>
+            <dt class="label capitalize">{t('calc.rate')}</dt>
+            <dd class="payment text-2xl mt-1">{f.ratePercent}%</dd>
+          </div>
+          <div>
+            <dt class="label">{t('calc.term')}</dt>
+            <dd class="payment text-2xl mt-1 whitespace-nowrap">{f.maxTermYears} <span class="text-base font-sans font-bold text-ink-2">{t('calc.years')}</span></dd>
+          </div>
+        </dl>
       </div>
 
-      <div class="flex flex-col gap-3 sm:flex-row lg:flex-col lg:shrink-0">
-        <a href={localePath(lang, '/contact')} class="btn btn-primary w-full sm:w-auto lg:w-full">{t('nav.contact')}</a>
-        <a href={`https://wa.me/${site.whatsapp}`} rel="noopener" class="btn btn-on-light w-full sm:w-auto lg:w-full">
-          <Icon name="whatsapp" size={16} />WhatsApp
-        </a>
+      <div class="card relative overflow-hidden p-8 sm:p-10">
+        <div class="spill -top-24 -right-16 h-64 w-80" aria-hidden="true"></div>
+        <div class="relative">
+          <p class="label">{t('calc.title')}</p>
+          <p class="mt-2 text-sm text-ink-2 max-w-[34ch]">{t('fin.lede')}</p>
+
+          <div class="mt-6">
+            <PaymentCalculator price={entry?.price ?? null} financing={f} lang={lang} size="lg" tone="light" id="home" />
+          </div>
+
+          <a href={localePath(lang, '/financing')} class="pill pill-soft pill-sm mt-7">
+            {t('nav.financing')}<Icon name="arrow-right" size={15} />
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Where to find them. -->
+  <section class="shell pt-16 sm:pt-24" data-reveal>
+    <div class="card overflow-hidden grid lg:grid-cols-[1fr_1.15fr]">
+      <div class="p-8 sm:p-10 flex flex-col justify-center">
+        <p class="label">{t('contact.findUs')}</p>
+        <h2 class="text-title mt-3 max-w-[16ch]">{t('contact.title')}</h2>
+
+        <div class="mt-6 space-y-4">
+          <p class="flex items-start gap-3 text-[0.9375rem] leading-relaxed">
+            <Icon name="map-pin" size={17} class="text-signal mt-0.5 shrink-0" />
+            <span>{pick(site.address, lang)}</span>
+          </p>
+          <p class="flex items-center gap-3 text-[0.9375rem]">
+            <Icon name="clock" size={17} class="text-signal shrink-0" />
+            <span>{pick(site.hours, lang)}</span>
+          </p>
+          <p class="flex items-center gap-3 text-[0.9375rem]">
+            <Icon name="phone" size={17} class="text-signal shrink-0" />
+            <a href={`tel:${tel}`} class="font-bold no-underline hover:text-signal transition-colors">{site.phones[0]}</a>
+          </p>
+        </div>
+
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href={localePath(lang, '/contact')} class="pill pill-primary">{t('nav.contact')}</a>
+          <a href={`https://wa.me/${site.whatsapp}`} rel="noopener" class="pill pill-ghost">
+            <Icon name="whatsapp" size={16} />WhatsApp
+          </a>
+        </div>
+      </div>
+
+      <div class="min-h-[16rem] lg:min-h-[22rem] bg-mist">
+        <iframe
+          src={mapSrc}
+          title={pick(site.address, lang)}
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          class="w-full h-full"
+          style="border:0"
+        ></iframe>
       </div>
     </div>
   </section>

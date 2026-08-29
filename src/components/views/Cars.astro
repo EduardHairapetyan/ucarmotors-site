@@ -2,8 +2,9 @@
 import { getEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import CarCard from '../CarCard.astro';
+import Icon from '../Icon.astro';
 import { getCars, maxRange, brandsOf } from '../../lib/catalog';
-import { useTranslations, type Lang } from '../../i18n/utils';
+import { localePath, useTranslations, type Lang } from '../../i18n/utils';
 
 interface Props { lang: Lang }
 const { lang } = Astro.props;
@@ -16,42 +17,73 @@ const brands = brandsOf(cars);
 ---
 
 <Base lang={lang} title={t('cars.title')} description={t('hero.lede')}>
-  <section class="shell py-12 sm:py-16">
-    <div class="flex items-end justify-between gap-4 flex-wrap border-b border-line pb-5">
-      <h1 class="text-title">{t('cars.title')}</h1>
-      <p class="eyebrow text-ink-2"><span data-count>{cars.length}</span> {t('cars.count')}</p>
+  <section class="shell pt-8 pb-4 sm:pt-12">
+    <div class="relative overflow-hidden card p-8 sm:p-10">
+      <div class="spill -top-40 -right-24 h-72 w-96" aria-hidden="true"></div>
+      <div class="relative flex flex-wrap items-end justify-between gap-6">
+        <div>
+          <h1 class="text-title">{t('cars.title')}</h1>
+          <p class="mt-3 text-ink-2 leading-relaxed max-w-[46ch]">{t('hero.lede')}</p>
+        </div>
+        <dl class="flex gap-8">
+          <div>
+            <dt class="label capitalize">{t('cars.count')}</dt>
+            <dd class="payment text-2xl mt-1"><span data-count>{cars.length}</span></dd>
+          </div>
+          <div>
+            <dt class="label capitalize">{t('calc.rate')}</dt>
+            <dd class="payment text-2xl mt-1">{site.financing.ratePercent}%</dd>
+          </div>
+          <div>
+            <dt class="label">{t('calc.term')}</dt>
+            <dd class="payment text-2xl mt-1 whitespace-nowrap">
+              {site.financing.maxTermYears}
+              <span class="font-sans text-base font-bold text-ink-2">{t('calc.years')}</span>
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filters are an enhancement: with JS off every car is already in the
+       DOM and visible, so the page still works. -->
+  <car-filter class="block shell pb-4">
+    <fieldset class="flex flex-wrap items-center gap-2 border-0 p-0 m-0 pt-6">
+      <legend class="label mb-3 w-full">{t('filter.brand')}</legend>
+      <button type="button" data-brand="" aria-pressed="true" class="chip">{t('filter.all')}</button>
+      {brands.map((brand) => (
+        <button type="button" data-brand={brand} aria-pressed="false" class="chip">{brand}</button>
+      ))}
+    </fieldset>
+
+    <div class="grid gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-8" data-grid>
+      {cars.map((car, i) => (
+        <div data-car data-car-brand={car.data.brand}>
+          <CarCard car={car} lang={lang} financing={site.financing} maxRange={max} index={i} />
+        </div>
+      ))}
     </div>
 
-    <!-- Filters are an enhancement: with JS off every car is already in the
-         DOM and visible, so the page still works. -->
-    <car-filter class="block mt-8">
-      <fieldset class="flex flex-wrap items-center gap-2 border-0 p-0 m-0">
-        <legend class="eyebrow text-ink-2 mb-3 w-full">{t('filter.brand')}</legend>
-        <button
-          type="button" data-brand="" aria-pressed="true"
-          class="eyebrow px-4 py-2.5 border border-signal bg-signal text-white transition-colors"
-        >{t('filter.all')}</button>
-        {brands.map((brand) => (
-          <button
-            type="button" data-brand={brand} aria-pressed="false"
-            class="eyebrow px-4 py-2.5 border border-line bg-white text-ink-2 hover:border-ink hover:text-ink transition-colors"
-          >{brand}</button>
-        ))}
-      </fieldset>
+    <div data-empty hidden class="card p-10 mt-8 text-center">
+      <p class="text-ink-2">{t('cars.empty')}</p>
+      <button type="button" data-reset class="pill pill-ghost pill-sm mt-5">{t('filter.all')}</button>
+    </div>
+  </car-filter>
 
-      <div
-        class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 mt-8"
-        data-grid
-      >
-        {cars.map((car, i) => (
-          <div data-car data-car-brand={car.data.brand}>
-            <CarCard car={car} lang={lang} financing={site.financing} maxRange={max} index={i} />
-          </div>
-        ))}
+  <section class="shell pt-12" data-reveal>
+    <div class="card p-8 sm:p-10 flex flex-wrap items-center justify-between gap-6">
+      <div>
+        <h2 class="text-xl font-extrabold tracking-[-0.03em]">{t('car.onRequest')}</h2>
+        <p class="mt-2 text-ink-2 max-w-[42ch] leading-relaxed">{t('calc.note')}</p>
       </div>
-
-      <p data-empty hidden class="mt-12 text-ink-2">{t('cars.empty')}</p>
-    </car-filter>
+      <div class="flex flex-wrap gap-3">
+        <a href={`tel:${site.phones[0].replace(/[^+\d]/g, '')}`} class="pill pill-primary">
+          <Icon name="phone" size={15} />{site.phones[0]}
+        </a>
+        <a href={localePath(lang, '/contact')} class="pill pill-ghost">{t('nav.contact')}</a>
+      </div>
+    </div>
   </section>
 </Base>
 
@@ -61,6 +93,7 @@ const brands = brandsOf(cars);
       const buttons = [...this.querySelectorAll<HTMLButtonElement>('[data-brand]')];
       const cards = [...this.querySelectorAll<HTMLElement>('[data-car]')];
       const empty = this.querySelector<HTMLElement>('[data-empty]');
+      const reset = this.querySelector<HTMLButtonElement>('[data-reset]');
       const count = document.querySelector<HTMLElement>('[data-count]');
 
       const apply = (brand: string) => {
@@ -73,16 +106,7 @@ const brands = brandsOf(cars);
         if (empty) empty.hidden = shown > 0;
         if (count) count.textContent = String(shown);
 
-        for (const b of buttons) {
-          const on = b.dataset.brand === brand;
-          b.setAttribute('aria-pressed', String(on));
-          b.classList.toggle('bg-signal', on);
-          b.classList.toggle('text-white', on);
-          b.classList.toggle('border-signal', on);
-          b.classList.toggle('border-line', !on);
-          b.classList.toggle('text-ink-2', !on);
-          b.classList.toggle('bg-white', !on);
-        }
+        for (const b of buttons) b.setAttribute('aria-pressed', String(b.dataset.brand === brand));
 
         // Keep the choice in the URL so a filtered view is shareable and
         // survives the back button.
@@ -91,9 +115,8 @@ const brands = brandsOf(cars);
         history.replaceState(null, '', url);
       };
 
-      for (const b of buttons) {
-        b.addEventListener('click', () => apply(b.dataset.brand ?? ''));
-      }
+      for (const b of buttons) b.addEventListener('click', () => apply(b.dataset.brand ?? ''));
+      reset?.addEventListener('click', () => apply(''));
 
       const initial = new URL(location.href).searchParams.get('brand') ?? '';
       if (initial && buttons.some((b) => b.dataset.brand === initial)) apply(initial);

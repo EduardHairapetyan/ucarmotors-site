@@ -11,8 +11,8 @@ interface Props {
   lang: Lang;
   title: string;
   description: string;
-  /** Extra JSON-LD to merge into the page graph. */
-  schema?: Record<string, unknown>;
+  /** Extra JSON-LD to merge into the page graph — one node or several. */
+  schema?: Record<string, unknown> | Record<string, unknown>[];
 }
 
 const { lang, title, description, schema } = Astro.props;
@@ -44,7 +44,8 @@ const dealer = {
   sameAs: [site.social.facebook, site.social.instagram, site.social.linkedin],
 };
 
-const graph = { '@context': 'https://schema.org', '@graph': [dealer, ...(schema ? [schema] : [])] };
+const extra = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
+const graph = { '@context': 'https://schema.org', '@graph': [dealer, ...extra] };
 ---
 
 <!doctype html>
@@ -55,7 +56,7 @@ const graph = { '@context': 'https://schema.org', '@graph': [dealer, ...(schema 
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <meta name="theme-color" content="#FFFFFF" />
+    <meta name="theme-color" content="#F4F5FB" />
     <link rel="icon" href={asset('/favicon.svg')} type="image/svg+xml" />
     <script is:inline>document.documentElement.classList.add('js');</script>
 
@@ -96,6 +97,16 @@ const graph = { '@context': 'https://schema.org', '@graph': [dealer, ...(schema 
       if (still || !('IntersectionObserver' in window)) {
         els.forEach((el) => el.classList.add('is-visible'));
       } else {
+        // Anything already on screen is shown outright. A scroll-reveal is for
+        // content you scroll to; running it on the first section leaves the top
+        // of the page briefly blank, and the observer can be slow to settle
+        // while lazy images are still reflowing underneath it.
+        const pending: HTMLElement[] = [];
+        for (const el of els) {
+          if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('is-visible');
+          else pending.push(el);
+        }
+
         const io = new IntersectionObserver(
           (entries) => {
             for (const e of entries) {
@@ -104,9 +115,11 @@ const graph = { '@context': 'https://schema.org', '@graph': [dealer, ...(schema 
               io.unobserve(e.target);
             }
           },
-          { rootMargin: '0px 0px -8% 0px', threshold: 0.1 }
+          // threshold 0: a tall section only shows a thin slice before it
+          // should appear, and a ratio threshold would hold it back.
+          { rootMargin: '0px 0px -6% 0px', threshold: 0 }
         );
-        els.forEach((el) => io.observe(el));
+        pending.forEach((el) => io.observe(el));
       }
     </script>
   </body>

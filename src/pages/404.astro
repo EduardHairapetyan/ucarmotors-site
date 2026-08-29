@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
 import { localePath, useTranslations, getLangFromUrl } from '../i18n/utils';
 
 // Cloudflare serves one 404 for every path, so the locale cannot be known at
@@ -9,13 +10,21 @@ const t = useTranslations(lang);
 ---
 
 <Base lang={lang} title="404" description="Page not found">
-  <section class="shell py-24 sm:py-32 max-w-xl">
-    <p class="eyebrow text-signal">404</p>
-    <h1 class="text-title mt-3">Էջը չգտնվեց</h1>
-    <p class="mt-3 text-ink-2">Страница не найдена · Page not found</p>
-    <div class="mt-8 flex flex-wrap gap-3">
-      <a href={localePath(lang, '/cars')} class="btn btn-primary">{t('nav.cars')}</a>
-      <a href={localePath(lang, '/')} class="btn btn-on-light">Ucar Motors</a>
+  <section class="shell py-12 sm:py-20">
+    <div class="relative overflow-hidden card p-10 sm:p-16 max-w-2xl mx-auto text-center">
+      <div class="spill -top-32 left-1/2 -translate-x-1/2 h-64 w-[28rem]" aria-hidden="true"></div>
+      <div class="relative">
+        <p class="payment text-6xl sm:text-7xl text-signal">404</p>
+        <h1 class="text-title mt-5">Էջը չգտնվեց</h1>
+        <p class="mt-3 text-ink-2">Страница не найдена · Page not found</p>
+
+        <div class="mt-9 flex flex-wrap justify-center gap-3">
+          <a href={localePath(lang, '/cars')} class="pill pill-primary">
+            {t('nav.cars')}<Icon name="arrow-right" size={16} />
+          </a>
+          <a href={localePath(lang, '/')} class="pill pill-ghost">Ucar Motors</a>
+        </div>
+      </div>
     </div>
   </section>
 </Base>

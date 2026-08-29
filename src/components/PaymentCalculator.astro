@@ -1,4 +1,15 @@
 ---
+/**
+ * The monthly payment, and the two sliders that move it.
+ *
+ * Rendered server-side so the figure is correct before any JS runs, and it
+ * keeps working as a static number with scripts off. `monthlyPayment` in
+ * `src/i18n/utils.ts` is the single source of truth for the maths; the copy
+ * of the annuity formula in the client script must stay identical to it.
+ *
+ * A car whose price is not published shows the "on request" line instead —
+ * never a payment derived from an unverified figure.
+ */
 import { monthlyPayment, formatAmd, useTranslations, type Lang } from '../i18n/utils';
 
 interface Financing {
@@ -16,52 +27,48 @@ interface Props {
   price: number | null;
   financing: Financing;
   lang: Lang;
-  /** 'lg' on the hero and car detail, 'sm' inside a card. */
+  /** 'lg' on the home page and financing, 'sm' inside a car page card. */
   size?: 'lg' | 'sm';
-  tone?: 'dark' | 'light';
+  /** Retained for callers; the site has no dark surfaces. */
+  tone?: 'light';
   id: string;
 }
 
-const { price, financing: f, lang, size = 'lg', tone = 'light', id } = Astro.props;
-const dark = tone === 'dark';
+const { price, financing: f, lang, size = 'lg', id } = Astro.props;
 const t = useTranslations(lang);
 
-// Rendered server-side so the figure is correct before any JS runs.
 const initial = price ? monthlyPayment(price, f.defaultDownPercent, f.defaultTermYears, f.ratePercent) : 0;
 const big = size === 'lg';
 ---
 
 {price === null ? (
-  <p class:list={['eyebrow', dark ? 'text-dim' : 'text-ink-2']} set:text={t('car.onRequest')} />
+  <p class="text-lg font-extrabold tracking-[-0.03em]" set:text={t('car.onRequest')} />
 ) : (
   <payment-calc
     data-price={price}
     data-rate={f.ratePercent}
     data-lang={lang}
     data-years={t('calc.years')}
-    class:list={['block', dark && 'on-dark']}
+    class="block"
   >
-    <div class:list={['flex items-baseline gap-2', big ? 'mb-4' : 'mb-2']}>
+    <div class:list={['flex items-baseline gap-2 flex-wrap', big ? 'mb-6' : 'mb-4']}>
       <output
         for={`${id}-down ${id}-term`}
         data-payment
-        class:list={['payment', dark ? 'text-white' : 'text-ink', big ? 'text-5xl sm:text-6xl' : 'text-2xl']}
+        class:list={['payment text-ink', big ? 'text-[clamp(2.5rem,7vw,3.5rem)]' : 'text-3xl']}
         set:text={formatAmd(initial, lang)}
       />
       <span
-        class:list={[dark ? 'text-dim' : 'text-ink-2', 'font-medium', big ? 'text-sm' : 'text-xs']}
+        class:list={['font-bold text-ink-2', big ? 'text-base' : 'text-sm']}
         set:text={t('calc.perMonth')}
       />
     </div>
 
-    <div class:list={['grid gap-3', big ? 'sm:grid-cols-2' : '']}>
+    <div class:list={['grid gap-5', big ? 'sm:grid-cols-2' : '']}>
       <div>
-        <label
-          for={`${id}-down`}
-          class:list={['flex justify-between items-baseline eyebrow mb-2', dark ? 'text-dim' : 'text-ink-2']}
-        >
+        <label for={`${id}-down`} class="flex justify-between items-baseline label mb-2.5">
           <span set:text={t('calc.down')} />
-          <span data-down-out class:list={['value font-semibold', dark ? 'text-white' : 'text-ink']}>{f.defaultDownPercent}%</span>
+          <span data-down-out class="font-data font-bold text-ink">{f.defaultDownPercent}%</span>
         </label>
         <input
           type="range"
@@ -76,12 +83,9 @@ const big = size === 'lg';
       </div>
 
       <div>
-        <label
-          for={`${id}-term`}
-          class:list={['flex justify-between items-baseline eyebrow mb-2', dark ? 'text-dim' : 'text-ink-2']}
-        >
+        <label for={`${id}-term`} class="flex justify-between items-baseline label mb-2.5">
           <span set:text={t('calc.term')} />
-          <span data-term-out class:list={['value font-semibold', dark ? 'text-white' : 'text-ink']} set:text={`${f.defaultTermYears} ${t('calc.years')}`} />
+          <span data-term-out class="font-data font-bold text-ink" set:text={`${f.defaultTermYears} ${t('calc.years')}`} />
         </label>
         <input
           type="range"
@@ -96,7 +100,7 @@ const big = size === 'lg';
       </div>
     </div>
 
-    <p class:list={[big ? 'mt-5' : 'mt-3', 'text-xs leading-relaxed max-w-prose', dark ? 'text-dim' : 'text-ink-2']}>
+    <p class:list={[big ? 'mt-6' : 'mt-4', 'text-xs leading-relaxed text-ink-2 max-w-prose']}>
       {f.ratePercent}% {t('calc.rate')} · {t('calc.note')}
     </p>
   </payment-calc>
@@ -125,7 +129,7 @@ const big = size === 'lg';
         { hy: 'hy-AM', ru: 'ru-RU', en: 'en-US' }[lang] ?? 'hy-AM',
         { maximumFractionDigits: 0 }
       );
-      const fmt = (n: number) => nf.format(Math.round(n)).replace(/[\u00A0,]/g, '\u202F');
+      const fmt = (n: number) => nf.format(Math.round(n)).replace(/[ ,]/g, ' ');
 
       const payment = (d: number, y: number) => {
         const principal = price * (1 - d / 100);

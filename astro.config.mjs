@@ -20,14 +20,7 @@ export default defineConfig({
     locales: ['hy', 'ru', 'en'],
     routing: { prefixDefaultLocale: false },
   },
-  integrations: [
-    sitemap({
-      // `/preview/*` is the design-comparison tree — throwaway, noindex, and
-      // ~200 URLs. Keeping it out leaves the sitemap the smoke tests check.
-      filter: (page) => !/\/preview(\/|$)/.test(page),
-      i18n: { defaultLocale: 'hy', locales: { hy: 'hy-AM', ru: 'ru-RU', en: 'en' } },
-    }),
-  ],
+  integrations: [sitemap({ i18n: { defaultLocale: 'hy', locales: { hy: 'hy-AM', ru: 'ru-RU', en: 'en' } } })],
   vite: { plugins: [tailwindcss()] },
   build: { inlineStylesheets: 'auto' },
 });

@@ -2,8 +2,9 @@
 import { getEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import PaymentCalculator from '../PaymentCalculator.astro';
+import Icon from '../Icon.astro';
 import { getCars, entryPrice } from '../../lib/catalog';
-import { useTranslations, type Lang } from '../../i18n/utils';
+import { localePath, useTranslations, type Lang } from '../../i18n/utils';
 
 interface Props { lang: Lang }
 const { lang } = Astro.props;
@@ -13,55 +14,100 @@ const site = (await getEntry('settings', 'site'))!.data;
 const f = site.financing;
 const cars = await getCars();
 const entry = entryPrice(cars);
+const tel = site.phones[0].replace(/[^+\d]/g, '');
 
 const DOCS: Record<Lang, string[]> = {
   hy: ['Անձնագիր կամ նույնականացման քարտ', 'Սոցիալական քարտ', 'Եկամուտը հաստատող տեղեկանք', 'Վարորդական վկայական'],
   ru: ['Паспорт или ID-карта', 'Социальная карта', 'Справка о доходах', 'Водительское удостоверение'],
   en: ['Passport or ID card', 'Social security card', 'Proof of income', "Driver's licence"],
 };
+
+const terms = [
+  { label: t('calc.rate'), value: `${f.ratePercent}%` },
+  { label: t('calc.down'), value: `${f.minDownPercent}–${f.maxDownPercent}%` },
+  { label: t('calc.term'), value: `${f.minTermYears}–${f.maxTermYears} ${t('calc.years')}` },
+];
 ---
 
 <Base lang={lang} title={t('fin.title')} description={t('fin.lede')}>
-  <section class="shell py-12 sm:py-16">
-    <h1 class="text-title">{t('fin.title')}</h1>
-    <p class="mt-4 text-lg text-ink-2 max-w-[52ch] leading-relaxed">{t('fin.lede')}</p>
+  <section class="shell pt-8 pb-4 sm:pt-12">
+    <div class="relative overflow-hidden card p-8 sm:p-10">
+      <div class="spill -top-40 -right-20 h-72 w-[26rem]" aria-hidden="true"></div>
+      <div class="relative">
+        <h1 class="text-title max-w-[18ch]">{t('fin.title')}</h1>
+        <p class="mt-4 text-lede text-ink-2 max-w-[50ch] leading-relaxed">{t('fin.lede')}</p>
 
-    {!f.verified && (
-      <p class="mt-7 max-w-[52ch] text-sm border-l-2 border-danger pl-4 py-1 text-ink-2">
+        <dl class="mt-8 flex flex-wrap gap-x-10 gap-y-5">
+          {terms.map((x) => (
+            <div>
+              <!-- `calc.rate` reads as a suffix ("13.25% rate") in every
+                   locale, so standing alone as a label it needs the capital. -->
+              <dt class="label capitalize">{x.label}</dt>
+              <dd class="payment text-2xl mt-1">{x.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- The rate on this page is not yet confirmed by the dealership, and every
+       figure the calculator prints is derived from it. The disclosure stays
+       until `financing.verified` is set in the CMS. -->
+  {!f.verified && (
+    <section class="shell pb-2">
+      <p class="rounded-[14px] bg-white p-4 pl-5 border-l-[3px] border-danger text-sm text-ink-2 max-w-[62ch] leading-relaxed shadow-[var(--shadow-lift)]">
         {t('fin.unverified')}
       </p>
-    )}
+    </section>
+  )}
 
-    <div class="grid gap-10 lg:grid-cols-2 lg:gap-16 mt-12">
-      <div class="relative overflow-hidden p-7 sm:p-9 bg-mist ring-1 ring-line">
-        <div
-          class="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full opacity-20 blur-3xl"
-          style="background:var(--gradient-brand)"
-          aria-hidden="true"
-        ></div>
-        <p class="eyebrow text-signal mb-5 relative">{t('calc.title')}</p>
+  <section class="shell pt-6">
+    <div class="grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:gap-8 items-start">
+      <div class="card relative overflow-hidden p-8 sm:p-10" data-reveal>
+        <div class="spill -bottom-32 -left-20 h-64 w-80" aria-hidden="true"></div>
         <div class="relative">
-          <PaymentCalculator
-            price={entry?.price ?? null}
-            financing={f}
-            lang={lang}
-            size="lg"
-            tone="light"
-            id="fin"
-          />
+          <p class="label">{t('calc.title')}</p>
+          {entry && (
+            <p class="mt-1.5 text-sm text-ink-2">
+              {t('cta.from')} <a href={localePath(lang, `/cars/${entry.car.id}`)} class="font-bold text-ink no-underline hover:text-signal transition-colors">{entry.car.data.brand} {entry.car.data.model}</a>
+            </p>
+          )}
+
+          <div class="mt-7">
+            <PaymentCalculator price={entry?.price ?? null} financing={f} lang={lang} size="lg" tone="light" id="fin" />
+          </div>
+
+          <a href={localePath(lang, '/cars')} class="pill pill-primary mt-8">
+            {t('nav.cars')}<Icon name="arrow-right" size={16} />
+          </a>
         </div>
       </div>
 
-      <div>
-        <h2 class="text-xl">{t('fin.docs')}</h2>
-        <ul class="mt-5 space-y-3">
-          {DOCS[lang].map((doc, i) => (
-            <li class="flex gap-4 items-baseline border-b border-line pb-3">
-              <span class="eyebrow text-signal">{String(i + 1).padStart(2, '0')}</span>
-              <span class="text-sm">{doc}</span>
+      <div class="card p-8 sm:p-10" data-reveal>
+        <h2 class="text-xl font-extrabold tracking-[-0.03em]">{t('fin.docs')}</h2>
+        <!-- A checklist, not a sequence: these are four things to bring, and
+             numbering them would imply an order that does not exist. -->
+        <ul class="mt-6 space-y-3 list-none p-0">
+          {DOCS[lang].map((doc) => (
+            <li class="flex items-start gap-3">
+              <span class="badge !w-6 !h-6 mt-px"><Icon name="check" size={13} /></span>
+              <span class="text-[0.9375rem] leading-snug">{doc}</span>
             </li>
           ))}
         </ul>
+
+        <div class="mt-8 pt-7 border-t border-line">
+          <p class="text-sm text-ink-2 leading-relaxed max-w-[38ch]">{t('calc.note')}</p>
+          <div class="mt-5 flex flex-wrap gap-3">
+            <a href={`tel:${tel}`} class="pill pill-primary">
+              <Icon name="phone" size={15} />{t('cta.call')}
+            </a>
+            <a href={`https://wa.me/${site.whatsapp}`} rel="noopener" class="pill pill-ghost">
+              <Icon name="whatsapp" size={16} />WhatsApp
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   </section>
