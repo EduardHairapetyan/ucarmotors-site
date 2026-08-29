@@ -1,0 +1,122 @@
+---
+import { localePath, useTranslations, stripLocale, type Lang } from '../i18n/utils';
+import { languages, locales } from '../i18n/ui';
+import Icon from './Icon.astro';
+import Logo from './Logo.astro';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const here = stripLocale(Astro.url.pathname).replace(/\/$/, '') || '/';
+const nav = [
+  { href: '/cars', label: t('nav.cars') },
+  { href: '/financing', label: t('nav.financing') },
+  { href: '/contact', label: t('nav.contact') },
+];
+---
+
+<header class="sticky top-0 z-40 bg-white">
+  <div class="shell flex items-center justify-between h-16 md:h-[4.5rem] gap-4">
+    <a href={localePath(lang, '/')} class="no-underline shrink-0 flex items-center gap-2.5">
+      <Logo size={26} />
+      <span class="flex items-baseline gap-1.5">
+        <span class="wordmark-brand font-data font-bold tracking-[0.2em] text-[0.9375rem] uppercase">Ucar</span>
+        <span class="font-data tracking-[0.2em] text-[0.9375rem] uppercase text-ink-2">Motors</span>
+      </span>
+    </a>
+
+    <nav aria-label="Main" class="hidden md:flex items-center gap-9 ml-auto mr-8">
+      {nav.map((item) => {
+        const active = here === item.href;
+        return (
+          <a
+            href={localePath(lang, item.href)}
+            aria-current={active ? 'page' : undefined}
+            class:list={[
+              'relative py-6 text-sm no-underline transition-colors',
+              active ? 'text-ink' : 'text-ink-2 hover:text-ink',
+            ]}
+          >
+            {item.label}
+            {active && <span class="absolute inset-x-0 bottom-0 h-[2px] bg-signal"></span>}
+          </a>
+        );
+      })}
+    </nav>
+
+    <div class="flex items-center gap-4">
+      <details class="lang-menu relative">
+        <summary
+          aria-label={t('lang.label')}
+          class="flex items-center gap-1.5 cursor-pointer select-none -mx-1 px-1 py-3 md:py-1.5 text-ink-2 hover:text-ink transition-colors"
+        >
+          <Icon name="globe" size={15} />
+          <span class="font-data text-[0.6875rem] tracking-[0.12em] uppercase text-ink">{lang}</span>
+          <Icon name="chevron-down" size={12} class="lang-caret transition-transform" />
+        </summary>
+        <ul class="absolute right-0 top-full mt-2 z-50 min-w-[9.5rem] bg-white border border-line shadow-lg py-1">
+          {locales.map((code) => (
+            <li>
+              <a
+                href={localePath(code, here)}
+                hreflang={code}
+                lang={code}
+                aria-current={code === lang ? 'true' : undefined}
+                class:list={[
+                  'flex items-center justify-between gap-3 px-3.5 py-2 text-sm no-underline transition-colors',
+                  code === lang ? 'text-ink' : 'text-ink-2 hover:text-ink hover:bg-mist',
+                ]}
+              >
+                <span>{languages[code]}</span>
+                <span class="font-data text-[0.625rem] tracking-[0.12em] uppercase text-ink-2">{code}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </details>
+
+      <a
+        href={localePath(lang, '/contact')}
+        class="btn btn-primary hidden sm:inline-flex !py-3 !px-5 !text-[0.8125rem]"
+      >{t('nav.contact')}</a>
+    </div>
+  </div>
+
+  <div class="h-[3px]" style="background:var(--gradient-brand)" aria-hidden="true"></div>
+</header>
+
+<!-- Secondary nav for phones. Deliberately outside the sticky <header> so it
+     scrolls away and hands the small viewport back to content; the logo and
+     the bottom action bar keep navigation reachable. -->
+<nav aria-label="Sections" class="md:hidden bg-white border-b border-line">
+  <div class="shell flex gap-7 h-12 items-center overflow-x-auto">
+    {nav.map((item) => (
+      <a
+        href={localePath(lang, item.href)}
+        aria-current={here === item.href ? 'page' : undefined}
+        class:list={[
+          'text-sm no-underline whitespace-nowrap',
+          here === item.href ? 'text-ink font-semibold' : 'text-ink-2',
+        ]}
+      >{item.label}</a>
+    ))}
+  </div>
+</nav>
+
+<script>
+  // Close the language menu on outside click or Escape. Without this it
+  // still closes on re-click of the toggle — the <details> default.
+  const menu = document.querySelector<HTMLDetailsElement>('.lang-menu');
+  if (menu) {
+    document.addEventListener('click', (e) => {
+      if (menu.open && !menu.contains(e.target as Node)) menu.open = false;
+    });
+    menu.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        menu.open = false;
+        menu.querySelector('summary')?.focus();
+      }
+    });
+  }
+</script>

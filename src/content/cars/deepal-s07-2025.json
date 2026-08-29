@@ -1,0 +1,32 @@
+{
+  "brand": "Deepal",
+  "model": "S07",
+  "year": 2025,
+  "bodyType": "suv",
+  "powertrain": "electric",
+  "rangeKm": null,
+  "batteryKwh": null,
+  "powerHp": null,
+  "drivetrain": null,
+  "priceAmd": 10000000,
+  "monthlyFromAmd": 170500,
+  "status": "available",
+  "colors": [],
+  "images": [
+    "/images/cars/deepal-s07-2025.jpg"
+  ],
+  "featured": true,
+  "specs": [],
+  "description": {
+    "hy": "Միջին չափի էլեկտրական քրոսովեր՝ ամենամատչելի մուտքի կետը մեր տեսականում։",
+    "ru": "Среднеразмерный электрический кроссовер — самая доступная точка входа в нашем модельном ряду.",
+    "en": "A mid-size electric crossover and the most affordable entry point in our range."
+  },
+  "source": {
+    "url": "https://mycar.am/dealers/39",
+    "name": "mycar.am",
+    "scrapedAt": "2026-08-29"
+  },
+  "verified": true,
+  "imageCredit": "Photo: Alexander Migl / Wikimedia Commons (CC BY-SA 4.0)"
+}

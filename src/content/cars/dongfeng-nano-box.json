@@ -1,0 +1,32 @@
+{
+  "brand": "Dongfeng",
+  "model": "Nano Box",
+  "year": null,
+  "bodyType": "hatchback",
+  "powertrain": "electric",
+  "rangeKm": null,
+  "batteryKwh": null,
+  "powerHp": null,
+  "drivetrain": null,
+  "priceAmd": null,
+  "monthlyFromAmd": null,
+  "status": "order",
+  "colors": [],
+  "images": [
+    "/images/cars/dongfeng-nano-box.jpg"
+  ],
+  "featured": false,
+  "specs": [],
+  "description": {
+    "hy": "Կոմպակտ քաղաքային էլեկտրամոբիլ։",
+    "ru": "Компактный городской электромобиль.",
+    "en": "A compact city EV."
+  },
+  "source": {
+    "url": "https://am.linkedin.com/company/ucar-motors",
+    "name": "linkedin",
+    "scrapedAt": "2026-08-29"
+  },
+  "verified": false,
+  "imageCredit": "Photo: JustAnotherCarDesigner / Wikimedia Commons (CC BY-SA 4.0)"
+}

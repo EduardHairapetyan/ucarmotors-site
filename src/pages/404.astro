@@ -1,0 +1,21 @@
+---
+import Base from '../layouts/Base.astro';
+import { localePath, useTranslations, getLangFromUrl } from '../i18n/utils';
+
+// Cloudflare serves one 404 for every path, so the locale cannot be known at
+// build time. Default to Armenian and offer all three routes back.
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+---
+
+<Base lang={lang} title="404" description="Page not found">
+  <section class="shell py-24 sm:py-32 max-w-xl">
+    <p class="eyebrow text-signal">404</p>
+    <h1 class="text-title mt-3">Էջը չգտնվեց</h1>
+    <p class="mt-3 text-ink-2">Страница не найдена · Page not found</p>
+    <div class="mt-8 flex flex-wrap gap-3">
+      <a href={localePath(lang, '/cars')} class="btn btn-primary">{t('nav.cars')}</a>
+      <a href={localePath(lang, '/')} class="btn btn-on-light">Ucar Motors</a>
+    </div>
+  </section>
+</Base>

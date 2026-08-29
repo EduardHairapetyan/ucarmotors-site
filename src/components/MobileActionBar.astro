@@ -1,0 +1,37 @@
+---
+import { getEntry } from 'astro:content';
+import { localePath, useTranslations, type Lang } from '../i18n/utils';
+import Icon from './Icon.astro';
+
+/**
+ * Persistent call / enquiry bar, phones and tablets only.
+ *
+ * The desktop header carries an enquiry CTA that is hidden below `sm`,
+ * which left phone visitors — the majority for an Armenian dealership — with
+ * no standing call to action at all. Calling is also the action people
+ * actually take for a car purchase, so it gets equal weight here.
+ */
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const site = (await getEntry('settings', 'site'))!.data;
+const tel = site.phones[0]!.replace(/[^+\d]/g, '');
+---
+
+<div
+  class="fixed bottom-0 inset-x-0 z-40 lg:hidden grid grid-cols-2 bg-white border-t border-line shadow-[0_-2px_20px_rgb(15_19_45_/_0.12)]"
+  style="padding-bottom:env(safe-area-inset-bottom)"
+>
+  <a
+    href={`tel:${tel}`}
+    class="flex items-center justify-center gap-2 h-16 text-sm font-semibold no-underline border-r border-line text-ink"
+  >
+    <Icon name="phone" size={15} />
+    {t('cta.call')}
+  </a>
+  <a
+    href={localePath(lang, '/contact')}
+    class="flex items-center justify-center h-16 text-sm font-semibold no-underline bg-signal text-white text-center px-3 leading-tight"
+  >{t('nav.contact')}</a>
+</div>

@@ -1,0 +1,32 @@
+{
+  "brand": "BYD",
+  "model": "Leopard 4WD Ultra",
+  "year": 2025,
+  "bodyType": "suv",
+  "powertrain": "phev",
+  "rangeKm": null,
+  "batteryKwh": null,
+  "powerHp": null,
+  "drivetrain": "awd",
+  "priceAmd": null,
+  "monthlyFromAmd": null,
+  "status": "available",
+  "colors": [],
+  "images": [
+    "/images/cars/byd-leopard-4wd-ultra.jpg"
+  ],
+  "featured": false,
+  "specs": [],
+  "description": {
+    "hy": "",
+    "ru": "",
+    "en": ""
+  },
+  "source": {
+    "url": "https://mycar.am/dealers/39",
+    "name": "mycar.am",
+    "scrapedAt": "2026-08-29"
+  },
+  "verified": false,
+  "imageCredit": "Photo: User3204 / Wikimedia Commons (CC BY-SA 4.0)"
+}

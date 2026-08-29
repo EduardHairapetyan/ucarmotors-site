@@ -1,0 +1,111 @@
+---
+import CarSilhouette from './CarSilhouette.astro';
+import { localePath, asset, formatAmd, monthlyPayment, useTranslations, pick, type Lang } from '../i18n/utils';
+import { priceOf, type Car } from '../lib/catalog';
+
+interface Props {
+  car: Car;
+  lang: Lang;
+  financing: { ratePercent: number; defaultDownPercent: number; defaultTermYears: number };
+  /** Longest range in the catalogue — the range bar is relative, not absolute. */
+  maxRange: number;
+  /** Position in its grid, used only to stagger the scroll-reveal. */
+  index?: number;
+}
+
+const { car, lang, financing: f, maxRange, index = 0 } = Astro.props;
+const t = useTranslations(lang);
+const d = car.data;
+
+const name = [d.brand, d.model].join(' ');
+const href = localePath(lang, `/cars/${car.id}`);
+const price = priceOf(car);
+const monthly = price ? monthlyPayment(price, f.defaultDownPercent, f.defaultTermYears, f.ratePercent) : null;
+const rangePct = d.rangeKm && maxRange > 0 ? Math.round((d.rangeKm / maxRange) * 100) : 0;
+
+const STATUS_TONE: Record<string, string> = {
+  available: 'text-charge',
+  'on-the-way': 'text-ink',
+  order: 'text-ink-2',
+  sold: 'text-ink-2',
+};
+const blurb = pick(d.description, lang);
+---
+
+<article
+  data-reveal
+  style={`--reveal-delay:${(index % 3) * 80}ms`}
+  class="group relative flex flex-col h-full bg-white border border-line transition-colors duration-150 hover:border-ink/45 focus-within:border-ink/45"
+>
+  <div class="aspect-[16/10] overflow-hidden bg-[#E7E9EC]">
+    {d.images.length > 0 ? (
+      <img
+        src={asset(d.images[0])}
+        alt={name}
+        loading="lazy"
+        decoding="async"
+        width="640"
+        height="360"
+        class="w-full h-full object-cover"
+      />
+    ) : (
+      <CarSilhouette body={d.bodyType} class="w-full h-full" />
+    )}
+  </div>
+
+  <!-- Range as a proportion of the fleet's longest. Absent when unknown —
+       the gap is information too, and a fake bar would not be. -->
+  {d.rangeKm ? (
+    <div class="rangebar bg-line" title={`${d.rangeKm} km`}>
+      <i class="bg-signal" style={`width:${rangePct}%`}></i>
+    </div>
+  ) : (
+    <div class="h-[2px] bg-line"></div>
+  )}
+
+  <div class="flex flex-col flex-1 p-5 sm:p-6 gap-3">
+    <div class="flex items-start justify-between gap-3">
+      <h3 class="text-[1.0625rem] leading-tight">
+        <a href={href} class="no-underline after:absolute after:inset-0 after:content-['']">
+          {name}{d.year ? <span class="text-ink-2 font-normal"> {d.year}</span> : null}
+        </a>
+      </h3>
+      <span class:list={['eyebrow whitespace-nowrap pt-1', STATUS_TONE[d.status]]}>
+        {t(`status.${d.status}` as 'status.available')}
+      </span>
+    </div>
+
+    <dl class="flex flex-wrap gap-x-4 gap-y-1 eyebrow text-ink-2">
+      <div class="flex gap-1.5">
+        <dt class="sr-only">{t('car.range')}</dt>
+        <dd class="not-italic">{t(`power.${d.powertrain}` as 'power.electric')}</dd>
+      </div>
+      {d.rangeKm && (
+        <div class="flex gap-1.5">
+          <dt class="sr-only">{t('car.range')}</dt>
+          <dd class="text-ink font-semibold">{d.rangeKm} km</dd>
+        </div>
+      )}
+    </dl>
+
+    {blurb && <p class="text-sm leading-relaxed text-ink-2 line-clamp-2">{blurb}</p>}
+
+    <div class="mt-auto pt-4 border-t border-line">
+      {price !== null ? (
+        <>
+          <div class="flex items-baseline gap-1.5">
+            <span class="payment text-[1.75rem] text-ink">{formatAmd(price, lang)}</span>
+            <span class="text-xs text-ink-2 font-medium">֏</span>
+          </div>
+          {monthly !== null && (
+            <p class="eyebrow mt-1.5 text-ink-2">
+              <span class="value">{formatAmd(monthly, lang)}</span> {t('calc.perMonth')}
+            </p>
+          )}
+        </>
+      ) : (
+        <p class="eyebrow text-ink-2">{t('car.onRequest')}</p>
+      )}
+    </div>
+  </div>
+</article>

@@ -1,0 +1,32 @@
+{
+  "brand": "Mazda",
+  "model": "EZ60 200 Max",
+  "year": 2025,
+  "bodyType": "suv",
+  "powertrain": "hybrid",
+  "rangeKm": null,
+  "batteryKwh": null,
+  "powerHp": null,
+  "drivetrain": null,
+  "priceAmd": 11700000,
+  "monthlyFromAmd": 199500,
+  "status": "available",
+  "colors": [],
+  "images": [
+    "/images/cars/mazda-ez60-200-max-2025.jpg"
+  ],
+  "featured": false,
+  "specs": [],
+  "description": {
+    "hy": "",
+    "ru": "",
+    "en": ""
+  },
+  "source": {
+    "url": "https://mycar.am/dealers/39",
+    "name": "mycar.am",
+    "scrapedAt": "2026-08-29"
+  },
+  "verified": true,
+  "imageCredit": "Photo: JustAnotherCarDesigner / Wikimedia Commons (CC0)"
+}

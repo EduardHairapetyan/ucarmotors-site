@@ -1,0 +1,13 @@
+---
+import CarDetail from '../../../components/views/CarDetail.astro';
+import { getCars } from '../../../lib/catalog';
+
+export async function getStaticPaths() {
+  const cars = await getCars();
+  return cars.map((car) => ({ params: { slug: car.id }, props: { car } }));
+}
+
+const { car } = Astro.props;
+---
+
+<CarDetail lang="en" car={car} />

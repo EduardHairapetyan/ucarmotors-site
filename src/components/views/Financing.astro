@@ -1,0 +1,68 @@
+---
+import { getEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PaymentCalculator from '../PaymentCalculator.astro';
+import { getCars, entryPrice } from '../../lib/catalog';
+import { useTranslations, type Lang } from '../../i18n/utils';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const site = (await getEntry('settings', 'site'))!.data;
+const f = site.financing;
+const cars = await getCars();
+const entry = entryPrice(cars);
+
+const DOCS: Record<Lang, string[]> = {
+  hy: ['Անձնագիր կամ նույնականացման քարտ', 'Սոցիալական քարտ', 'Եկամուտը հաստատող տեղեկանք', 'Վարորդական վկայական'],
+  ru: ['Паспорт или ID-карта', 'Социальная карта', 'Справка о доходах', 'Водительское удостоверение'],
+  en: ['Passport or ID card', 'Social security card', 'Proof of income', "Driver's licence"],
+};
+---
+
+<Base lang={lang} title={t('fin.title')} description={t('fin.lede')}>
+  <section class="shell py-12 sm:py-16">
+    <h1 class="text-title">{t('fin.title')}</h1>
+    <p class="mt-4 text-lg text-ink-2 max-w-[52ch] leading-relaxed">{t('fin.lede')}</p>
+
+    {!f.verified && (
+      <p class="mt-7 max-w-[52ch] text-sm border-l-2 border-danger pl-4 py-1 text-ink-2">
+        {t('fin.unverified')}
+      </p>
+    )}
+
+    <div class="grid gap-10 lg:grid-cols-2 lg:gap-16 mt-12">
+      <div class="relative overflow-hidden p-7 sm:p-9 bg-mist ring-1 ring-line">
+        <div
+          class="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full opacity-20 blur-3xl"
+          style="background:var(--gradient-brand)"
+          aria-hidden="true"
+        ></div>
+        <p class="eyebrow text-signal mb-5 relative">{t('calc.title')}</p>
+        <div class="relative">
+          <PaymentCalculator
+            price={entry?.price ?? null}
+            financing={f}
+            lang={lang}
+            size="lg"
+            tone="light"
+            id="fin"
+          />
+        </div>
+      </div>
+
+      <div>
+        <h2 class="text-xl">{t('fin.docs')}</h2>
+        <ul class="mt-5 space-y-3">
+          {DOCS[lang].map((doc, i) => (
+            <li class="flex gap-4 items-baseline border-b border-line pb-3">
+              <span class="eyebrow text-signal">{String(i + 1).padStart(2, '0')}</span>
+              <span class="text-sm">{doc}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+</Base>

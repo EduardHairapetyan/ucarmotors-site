@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.astro/
+.env
+.cf-secrets-set
+data/raw/
+.DS_Store

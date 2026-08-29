@@ -1,0 +1,21 @@
+---
+/**
+ * Brand mark — hexagon badge with a bolt, in the brand gradient. A clean
+ * geometric stand-in for the supplied logo; swap in the real asset (place it
+ * in `public/` and reference it here) when it is available in vector form.
+ */
+interface Props { size?: number; class?: string; }
+const { size = 28, class: className = '' } = Astro.props;
+const id = `lg-${Math.random().toString(36).slice(2, 8)}`;
+---
+<svg width={size} height={size} viewBox="0 0 64 64" class={className} role="img" aria-label="Ucar Motors">
+  <defs>
+    <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="var(--color-brand-cyan)" />
+      <stop offset="0.5" stop-color="var(--color-brand-blue)" />
+      <stop offset="1" stop-color="var(--color-brand-violet)" />
+    </linearGradient>
+  </defs>
+  <path d={`M32 7 53 19v26L32 57 11 45V19Z`} fill={`url(#${id})`} />
+  <path d="M34 16 21 37h9l-2 11 15-22h-10z" fill="#fff" />
+</svg>

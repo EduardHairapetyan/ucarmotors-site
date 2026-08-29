@@ -1,0 +1,46 @@
+---
+/**
+ * Placeholder until Ucar supplies photography. A flat silhouette in the
+ * surrounding tone rather than a stock photo or a broken-image box: honest
+ * about being a placeholder, still tells you the body type, ~700 bytes, no
+ * network request. `tone` keeps it legible on either ground.
+ */
+interface Props {
+  body?: 'sedan' | 'suv' | 'crossover' | 'hatchback' | 'mpv' | 'pickup' | null;
+  tone?: 'dark' | 'light';
+  class?: string;
+}
+const { body, tone = 'light', class: className = '' } = Astro.props;
+
+const PATHS: Record<string, string> = {
+  sedan: 'M18,118 L21,97 C23,88 33,84 51,82 L98,79 L126,55 C130,49 138,46 148,46 L206,46 C216,46 224,50 230,57 L253,81 L288,87 C300,89 305,96 305,107 L305,118 Z',
+  suv: 'M16,118 L18,92 C20,82 30,77 48,75 L92,72 L116,42 C120,35 128,32 138,32 L214,32 C224,32 232,36 238,44 L258,74 L292,81 C304,84 308,91 308,103 L308,118 Z',
+  crossover: 'M17,118 L20,95 C22,85 32,80 50,78 L95,75 L121,49 C125,42 133,39 143,39 L210,39 C220,39 228,43 234,51 L256,77 L290,84 C302,86 306,94 306,105 L306,118 Z',
+  hatchback: 'M22,118 L24,98 C26,89 36,85 54,83 L100,80 L128,57 C132,51 140,48 150,48 L214,48 C226,48 234,54 238,64 L252,100 L256,118 Z',
+  mpv: 'M16,118 L18,90 C20,80 30,75 48,73 L88,70 L112,38 C116,32 124,29 134,29 L220,29 C230,29 238,34 242,43 L256,72 L292,80 C304,83 308,90 308,102 L308,118 Z',
+  pickup: 'M16,118 L18,94 C20,85 30,80 48,78 L88,75 L110,48 C114,41 122,38 132,38 L178,38 C188,38 194,42 196,50 L198,78 L304,78 C310,78 312,82 312,90 L312,118 Z',
+};
+const WHEELS: Record<string, [number, number]> = {
+  sedan: [88, 240], suv: [86, 244], crossover: [87, 242],
+  hatchback: [90, 222], mpv: [84, 246], pickup: [84, 258],
+};
+
+const key = body && PATHS[body] ? body : 'crossover';
+const [rear, front] = WHEELS[key]!;
+
+// Kept close to its own ground so a grid of twelve recedes instead of
+// reading as a wall of identical grey cars.
+const ground = tone === 'dark' ? '#141619' : '#E7E9EC';
+const shape = tone === 'dark' ? '#22262C' : '#D3D7DC';
+---
+
+<svg viewBox="0 22 320 122" class={className} role="presentation" aria-hidden="true" preserveAspectRatio="xMidYMid meet">
+  <rect x="0" y="0" width="320" height="160" fill={ground} />
+  <path d={PATHS[key]} fill={shape} />
+  <g fill={ground}>
+    <circle cx={rear} cy="118" r="24" /><circle cx={front} cy="118" r="24" />
+  </g>
+  <g fill={shape}>
+    <circle cx={rear} cy="118" r="14" /><circle cx={front} cy="118" r="14" />
+  </g>
+</svg>

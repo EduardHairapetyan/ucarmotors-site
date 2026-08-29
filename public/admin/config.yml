@@ -1,0 +1,150 @@
+# Sveltia CMS — the maintained Decap fork. Git-backed: every edit is a commit,
+# so the price history of every car is in the repo and revertable.
+#
+# Two placeholders must be filled before /admin will log in:
+#   repo      your GitHub owner/repo
+#   base_url  the auth worker URL printed by scripts/setup-cms.sh
+
+backend:
+  name: github
+  repo: EduardHairapetyan/ucarmotors-site
+  branch: main
+  base_url: https://ucar-cms-auth.YOUR-SUBDOMAIN.workers.dev
+
+media_folder: public/images/cars
+public_folder: /images/cars
+
+# Editors see hy labels; the site itself is what carries ru and en.
+locale: hy
+
+collections:
+  - name: cars
+    label: Մեքենաներ
+    label_singular: Մեքենա
+    folder: src/content/cars
+    create: true
+    extension: json
+    format: json
+    slug: '{{brand}}-{{model}}-{{year}}'
+    summary: '{{brand}} {{model}} {{year}} — {{priceAmd}} ֏'
+    sortable_fields: [brand, priceAmd, status]
+    view_filters:
+      - { label: Ստուգված, field: verified, pattern: true }
+      - { label: Չստուգված, field: verified, pattern: false }
+      - { label: Առկա, field: status, pattern: available }
+    fields:
+      - { name: brand, label: Ապրանքանիշ, widget: string }
+      - { name: model, label: Մոդել, widget: string }
+      - { name: year, label: Տարի, widget: number, value_type: int, required: false, min: 2015, max: 2035 }
+      - name: bodyType
+        label: Թափք
+        widget: select
+        required: false
+        options: [sedan, suv, hatchback, crossover, mpv, pickup]
+      - name: powertrain
+        label: Շարժիչ
+        widget: select
+        options: [electric, hybrid, phev]
+        default: electric
+      - { name: rangeKm, label: Վազքի պաշար (կմ), widget: number, value_type: int, required: false }
+      - { name: batteryKwh, label: Մարտկոց (կՎտ·ժ), widget: number, value_type: float, required: false }
+      - { name: powerHp, label: Հզորություն (ձ.ու.), widget: number, value_type: int, required: false }
+      - name: drivetrain
+        label: Փոխանցում
+        widget: select
+        required: false
+        options: [fwd, rwd, awd]
+
+      - name: priceAmd
+        label: Գին (֏)
+        widget: number
+        value_type: int
+        required: false
+        hint: Թողեք դատարկ՝ «պայմանագրային» ցուցադրելու համար։
+      - { name: monthlyFromAmd, label: 'Ամսական (տեղեկատու, չի ցուցադրվում)', widget: number, value_type: int, required: false }
+
+      - name: status
+        label: Կարգավիճակ
+        widget: select
+        options: [available, on-the-way, order, sold]
+        default: available
+      - { name: colors, label: Գույներ, widget: list, required: false, field: { name: color, label: Գույն, widget: string } }
+      - { name: images, label: Նկարներ, widget: list, required: false, field: { name: image, label: Նկար, widget: image } }
+      - { name: imageCredit, label: 'Լուսանկարի հղում (ջնջեք՝ սեփական լուսանկար դնելիս)', widget: string, required: false }
+      - { name: featured, label: Գլխավոր էջում, widget: boolean, default: false }
+
+      - name: specs
+        label: Բնութագրեր
+        widget: list
+        required: false
+        fields:
+          - name: label
+            label: Անվանում
+            widget: object
+            fields:
+              - { name: hy, label: Հայերեն, widget: string }
+              - { name: ru, label: Русский, widget: string, required: false }
+              - { name: en, label: English, widget: string, required: false }
+          - { name: value, label: Արժեք, widget: string }
+
+      - name: description
+        label: Նկարագրություն
+        widget: object
+        fields:
+          - { name: hy, label: Հայերեն, widget: text, required: false }
+          - { name: ru, label: Русский, widget: text, required: false }
+          - { name: en, label: English, widget: text, required: false }
+
+      - name: verified
+        label: Գինը ստուգված է
+        widget: boolean
+        default: false
+        hint: Քանի դեռ անջատված է, գինը կայքում չի ցուցադրվում։
+
+  - name: settings
+    label: Կարգավորումներ
+    files:
+      - name: site
+        label: Կայքի տվյալներ
+        file: src/content/settings/site.json
+        fields:
+          - { name: id, label: ID, widget: hidden, default: site }
+          - { name: phones, label: Հեռախոսներ, widget: list, field: { name: phone, label: Հեռախոս, widget: string } }
+          - { name: whatsapp, label: WhatsApp (թվերով), widget: string }
+          - { name: email, label: Էլ. փոստ, widget: string }
+          - { name: mapUrl, label: Քարտեզի հղում, widget: string }
+          - { name: mapEmbed, label: 'Ներդրված քարտեզ (Google Maps → Կիսվել → Ներդնել քարտեզ, src հասցեն)', widget: string, required: false }
+          - name: address
+            label: Հասցե
+            widget: object
+            fields:
+              - { name: hy, label: Հայերեն, widget: string }
+              - { name: ru, label: Русский, widget: string }
+              - { name: en, label: English, widget: string }
+          - name: hours
+            label: Աշխատանքային ժամեր
+            widget: object
+            fields:
+              - { name: hy, label: Հայերեն, widget: string }
+              - { name: ru, label: Русский, widget: string }
+              - { name: en, label: English, widget: string }
+          - name: social
+            label: Սոցիալական ցանցեր
+            widget: object
+            fields:
+              - { name: facebook, label: Facebook, widget: string }
+              - { name: instagram, label: Instagram, widget: string }
+              - { name: linkedin, label: LinkedIn, widget: string }
+          - name: financing
+            label: Վարկային պայմաններ
+            widget: object
+            hint: Այս արժեքները կիրառվում են կայքի բոլոր հաշվիչներում։
+            fields:
+              - { name: ratePercent, label: Տոկոսադրույք %, widget: number, value_type: float }
+              - { name: minDownPercent, label: Նվազագույն կանխավճար %, widget: number, value_type: int }
+              - { name: maxDownPercent, label: Առավելագույն կանխավճար %, widget: number, value_type: int }
+              - { name: defaultDownPercent, label: Կանխավճար՝ լռելյայն %, widget: number, value_type: int }
+              - { name: minTermYears, label: Նվազագույն ժամկետ, widget: number, value_type: int }
+              - { name: maxTermYears, label: Առավելագույն ժամկետ, widget: number, value_type: int }
+              - { name: defaultTermYears, label: Ժամկետ՝ լռելյայն, widget: number, value_type: int }
+              - { name: verified, label: Պայմանները հաստատված են, widget: boolean, default: false }

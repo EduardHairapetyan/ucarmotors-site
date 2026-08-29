@@ -1,0 +1,35 @@
+[
+  {
+    "id": "site",
+    "phones": ["+374 91 466667", "+374 91 466607", "+374 93 466667"],
+    "whatsapp": "37491466667",
+    "email": "info@ucarmotors.am",
+    "address": {
+      "hy": "Կոտայքի մարզ, Վերին Պտղնի, Նոր թաղամաս, 1-ին փող. 45",
+      "ru": "Котайкская обл., Верин Птгни, Нор Тагамас, 1-я ул. 45",
+      "en": "Verin Ptghni, Nor Taghamas, 1st St. 45, Kotayk Province, Armenia"
+    },
+    "hours": {
+      "hy": "Երկուշաբթի–Շաբաթ, 10:00–19:00",
+      "ru": "Понедельник–суббота, 10:00–19:00",
+      "en": "Monday–Saturday, 10:00–19:00"
+    },
+    "mapUrl": "https://www.google.com/maps/place/Ucar+Motors/@40.2442125,44.5722366,15.89z/data=!4m9!1m2!2m1!1sVerin+Ptghni,+Nor+Taghamas,+1st+St.+45,+Kotayk+Province,+Armenia!3m5!1s0x406aa37cf4348a35:0x8fa538fb172d9db6!8m2!3d40.24566!4d44.5808296!16s%2Fg%2F11vcvtmd5k",
+    "mapEmbed": "https://www.google.com/maps?q=40.24566,44.5808296&z=16&output=embed",
+    "social": {
+      "facebook": "https://www.facebook.com/UcarMotors.am/",
+      "instagram": "https://www.instagram.com/ucar__motors",
+      "linkedin": "https://am.linkedin.com/company/ucar-motors"
+    },
+    "financing": {
+      "ratePercent": 13.25,
+      "minDownPercent": 10,
+      "maxDownPercent": 30,
+      "defaultDownPercent": 10,
+      "minTermYears": 1,
+      "maxTermYears": 7,
+      "defaultTermYears": 7,
+      "verified": false
+    }
+  }
+]

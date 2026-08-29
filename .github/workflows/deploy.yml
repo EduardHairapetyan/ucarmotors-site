@@ -1,0 +1,42 @@
+name: Deploy to GitHub Pages (test mirror)
+
+# GitHub Pages here is a throwaway preview of the branch. Production is
+# Cloudflare Pages (ucarmotors.am) via scripts/deploy.sh — unaffected by this.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Allow the deploy job to publish to Pages via OIDC.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; don't cancel a run that's mid-publish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # Switches astro.config.mjs to the project-page URL + /ucarmotors-site base.
+      GITHUB_PAGES: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      # Installs deps (npm ci), runs `astro build`, uploads ./dist as the
+      # Pages artifact.
+      - uses: withastro/action@v3
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

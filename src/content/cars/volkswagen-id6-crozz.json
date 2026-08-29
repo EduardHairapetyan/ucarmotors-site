@@ -1,0 +1,32 @@
+{
+  "brand": "Volkswagen",
+  "model": "ID.6 Crozz",
+  "year": null,
+  "bodyType": "suv",
+  "powertrain": "electric",
+  "rangeKm": null,
+  "batteryKwh": null,
+  "powerHp": null,
+  "drivetrain": null,
+  "priceAmd": null,
+  "monthlyFromAmd": null,
+  "status": "order",
+  "colors": [],
+  "images": [
+    "/images/cars/volkswagen-id6-crozz.jpg"
+  ],
+  "featured": false,
+  "specs": [],
+  "description": {
+    "hy": "",
+    "ru": "",
+    "en": ""
+  },
+  "source": {
+    "url": "https://am.linkedin.com/company/ucar-motors",
+    "name": "linkedin",
+    "scrapedAt": "2026-08-29"
+  },
+  "verified": false,
+  "imageCredit": "Photo: Evnerd / Wikimedia Commons (CC BY-SA 4.0)"
+}

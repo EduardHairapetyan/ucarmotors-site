@@ -1,0 +1,104 @@
+---
+import { getEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import CarCard from '../CarCard.astro';
+import { getCars, maxRange, brandsOf } from '../../lib/catalog';
+import { useTranslations, type Lang } from '../../i18n/utils';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const site = (await getEntry('settings', 'site'))!.data;
+const cars = await getCars();
+const max = maxRange(cars);
+const brands = brandsOf(cars);
+---
+
+<Base lang={lang} title={t('cars.title')} description={t('hero.lede')}>
+  <section class="shell py-12 sm:py-16">
+    <div class="flex items-end justify-between gap-4 flex-wrap border-b border-line pb-5">
+      <h1 class="text-title">{t('cars.title')}</h1>
+      <p class="eyebrow text-ink-2"><span data-count>{cars.length}</span> {t('cars.count')}</p>
+    </div>
+
+    <!-- Filters are an enhancement: with JS off every car is already in the
+         DOM and visible, so the page still works. -->
+    <car-filter class="block mt-8">
+      <fieldset class="flex flex-wrap items-center gap-2 border-0 p-0 m-0">
+        <legend class="eyebrow text-ink-2 mb-3 w-full">{t('filter.brand')}</legend>
+        <button
+          type="button" data-brand="" aria-pressed="true"
+          class="eyebrow px-4 py-2.5 border border-signal bg-signal text-white transition-colors"
+        >{t('filter.all')}</button>
+        {brands.map((brand) => (
+          <button
+            type="button" data-brand={brand} aria-pressed="false"
+            class="eyebrow px-4 py-2.5 border border-line bg-white text-ink-2 hover:border-ink hover:text-ink transition-colors"
+          >{brand}</button>
+        ))}
+      </fieldset>
+
+      <div
+        class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 mt-8"
+        data-grid
+      >
+        {cars.map((car, i) => (
+          <div data-car data-car-brand={car.data.brand}>
+            <CarCard car={car} lang={lang} financing={site.financing} maxRange={max} index={i} />
+          </div>
+        ))}
+      </div>
+
+      <p data-empty hidden class="mt-12 text-ink-2">{t('cars.empty')}</p>
+    </car-filter>
+  </section>
+</Base>
+
+<script>
+  class CarFilter extends HTMLElement {
+    connectedCallback() {
+      const buttons = [...this.querySelectorAll<HTMLButtonElement>('[data-brand]')];
+      const cards = [...this.querySelectorAll<HTMLElement>('[data-car]')];
+      const empty = this.querySelector<HTMLElement>('[data-empty]');
+      const count = document.querySelector<HTMLElement>('[data-count]');
+
+      const apply = (brand: string) => {
+        let shown = 0;
+        for (const card of cards) {
+          const match = !brand || card.dataset.carBrand === brand;
+          card.hidden = !match;
+          if (match) shown++;
+        }
+        if (empty) empty.hidden = shown > 0;
+        if (count) count.textContent = String(shown);
+
+        for (const b of buttons) {
+          const on = b.dataset.brand === brand;
+          b.setAttribute('aria-pressed', String(on));
+          b.classList.toggle('bg-signal', on);
+          b.classList.toggle('text-white', on);
+          b.classList.toggle('border-signal', on);
+          b.classList.toggle('border-line', !on);
+          b.classList.toggle('text-ink-2', !on);
+          b.classList.toggle('bg-white', !on);
+        }
+
+        // Keep the choice in the URL so a filtered view is shareable and
+        // survives the back button.
+        const url = new URL(location.href);
+        brand ? url.searchParams.set('brand', brand) : url.searchParams.delete('brand');
+        history.replaceState(null, '', url);
+      };
+
+      for (const b of buttons) {
+        b.addEventListener('click', () => apply(b.dataset.brand ?? ''));
+      }
+
+      const initial = new URL(location.href).searchParams.get('brand') ?? '';
+      if (initial && buttons.some((b) => b.dataset.brand === initial)) apply(initial);
+    }
+  }
+
+  if (!customElements.get('car-filter')) customElements.define('car-filter', CarFilter);
+</script>
