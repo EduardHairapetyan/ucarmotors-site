@@ -6,7 +6,7 @@ import CarSilhouette from '../CarSilhouette.astro';
 import PaymentCalculator from '../PaymentCalculator.astro';
 import Icon from '../Icon.astro';
 import { getCars, getFeatured, maxRange, entryPrice, priceOf } from '../../lib/catalog';
-import { localePath, asset, useTranslations, pick, formatAmd, monthlyPayment, type Lang } from '../../i18n/utils';
+import { localePath, asset, useTranslations, pick, formatAmd, type Lang } from '../../i18n/utils';
 
 interface Props { lang: Lang }
 const { lang } = Astro.props;
@@ -24,7 +24,6 @@ const tel = site.phones[0].replace(/[^+\d]/g, '');
 // "from" figure, so the number on screen is one you can go and buy.
 const heroCar = entry?.car ?? featured[0]!;
 const heroPrice = entry?.price ?? priceOf(heroCar);
-const heroMonthly = heroPrice ? monthlyPayment(heroPrice, f.defaultDownPercent, f.defaultTermYears, f.ratePercent) : null;
 const heroName = `${heroCar.data.brand} ${heroCar.data.model}`;
 
 const services = [
@@ -91,10 +90,10 @@ const mapSrc = mapBase.includes('hl=') ? mapBase : `${mapBase}&hl=${lang}`;
               </p>
             </div>
 
-            {heroMonthly !== null ? (
+            {heroPrice !== null ? (
               <span class="pill pill-money">
-                <b>{formatAmd(heroMonthly, lang)}</b>
-                <span class="text-ink-2 font-semibold">{t('calc.perMonth')}</span>
+                <b>{formatAmd(heroPrice, lang)}</b>
+                <span class="text-ink-2 font-semibold">֏</span>
               </span>
             ) : (
               <a href={`tel:${tel}`} class="pill pill-primary">{t('cta.call')}</a>
@@ -139,7 +138,7 @@ const mapSrc = mapBase.includes('hl=') ? mapBase : `${mapBase}&hl=${lang}`;
 
     <div class="grid gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-8">
       {featured.map((car, i) => (
-        <CarCard car={car} lang={lang} financing={f} maxRange={max} index={i} />
+        <CarCard car={car} lang={lang} maxRange={max} index={i} />
       ))}
     </div>
   </section>

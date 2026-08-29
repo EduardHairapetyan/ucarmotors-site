@@ -3,27 +3,31 @@
  * Catalogue tile.
  *
  * The bottom row is always a pill of the same shape, size and position: the
- * monthly figure when the price is published, the call action when it is not.
- * Nine of the twelve cars have no published price, and none of them should
- * look like a card that failed to load.
+ * car's price when it is published, the call action when it is not. Nine of
+ * the twelve cars have no published price, and none of them should look like
+ * a card that failed to load.
+ *
+ * The pill shows the *price*, never a monthly payment. A payment figure is
+ * derived from the financing rate, which is a different and less certain
+ * thing than the price of the car — the calculator on the car's own page is
+ * where that belongs.
  */
 import CarSilhouette from './CarSilhouette.astro';
 import Icon from './Icon.astro';
 import { getEntry } from 'astro:content';
-import { localePath, asset, formatAmd, monthlyPayment, useTranslations, pick, type Lang } from '../i18n/utils';
+import { localePath, asset, formatAmd, useTranslations, pick, type Lang } from '../i18n/utils';
 import { priceOf, type Car } from '../lib/catalog';
 
 interface Props {
   car: Car;
   lang: Lang;
-  financing: { ratePercent: number; defaultDownPercent: number; defaultTermYears: number };
   /** Longest range in the catalogue — the range bar is relative, not absolute. */
   maxRange: number;
   /** Position in its grid, used only to stagger the scroll-reveal. */
   index?: number;
 }
 
-const { car, lang, financing: f, maxRange, index = 0 } = Astro.props;
+const { car, lang, maxRange, index = 0 } = Astro.props;
 const t = useTranslations(lang);
 const site = (await getEntry('settings', 'site'))!.data;
 const d = car.data;
@@ -31,7 +35,6 @@ const d = car.data;
 const name = [d.brand, d.model].join(' ');
 const href = localePath(lang, `/cars/${car.id}`);
 const price = priceOf(car);
-const monthly = price ? monthlyPayment(price, f.defaultDownPercent, f.defaultTermYears, f.ratePercent) : null;
 const rangePct = d.rangeKm && maxRange > 0 ? Math.round((d.rangeKm / maxRange) * 100) : 0;
 const blurb = pick(d.description, lang);
 const tel = site.phones[0].replace(/[^+\d]/g, '');
@@ -93,10 +96,10 @@ const tel = site.phones[0].replace(/[^+\d]/g, '');
     )}
 
     <div class="mt-auto pt-4">
-      {monthly !== null ? (
+      {price !== null ? (
         <a href={href} class="pill pill-money w-full">
-          <b>{formatAmd(monthly, lang)}</b>
-          <span class="text-ink-2 font-semibold">{t('calc.perMonth')}</span>
+          <b>{formatAmd(price, lang)}</b>
+          <span class="text-ink-2 font-semibold">֏</span>
         </a>
       ) : (
         <a href={`tel:${tel}`} class="pill pill-primary w-full">

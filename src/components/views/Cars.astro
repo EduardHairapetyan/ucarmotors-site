@@ -60,7 +60,7 @@ const brands = brandsOf(cars);
     <div class="grid gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-8" data-grid>
       {cars.map((car, i) => (
         <div data-car data-car-brand={car.data.brand}>
-          <CarCard car={car} lang={lang} financing={site.financing} maxRange={max} index={i} />
+          <CarCard car={car} lang={lang} maxRange={max} index={i} />
         </div>
       ))}
     </div>
