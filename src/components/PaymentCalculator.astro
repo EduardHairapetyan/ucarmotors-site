@@ -38,6 +38,10 @@ const { price, financing: f, lang, size = 'lg', id } = Astro.props;
 const t = useTranslations(lang);
 
 const initial = price ? monthlyPayment(price, f.defaultDownPercent, f.defaultTermYears, f.ratePercent) : 0;
+// Composed here, not in the template: Astro collapses the space between two
+// adjacent expressions on their own line, which silently joined the rate to
+// its label.
+const rateNote = `${t('calc.rate')} ${f.ratePercent}% · ${t('calc.note')}`;
 const big = size === 'lg';
 ---
 
@@ -101,7 +105,7 @@ const big = size === 'lg';
     </div>
 
     <p class:list={[big ? 'mt-6' : 'mt-4', 'text-xs leading-relaxed text-ink-2 max-w-prose']}>
-      {f.ratePercent}% {t('calc.rate')} · {t('calc.note')}
+      {rateNote}
     </p>
   </payment-calc>
 )}

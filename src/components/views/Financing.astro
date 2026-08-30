@@ -40,9 +40,7 @@ const terms = [
         <dl class="mt-8 flex flex-wrap gap-x-10 gap-y-5">
           {terms.map((x) => (
             <div>
-              <!-- `calc.rate` reads as a suffix ("13.25% rate") in every
-                   locale, so standing alone as a label it needs the capital. -->
-              <dt class="label capitalize">{x.label}</dt>
+              <dt class="label">{x.label}</dt>
               <dd class="payment text-2xl mt-1">{x.value}</dd>
             </div>
           ))}
@@ -69,8 +67,8 @@ const terms = [
         <div class="relative">
           <p class="label">{t('calc.title')}</p>
           {entry && (
-            <p class="mt-1.5 text-sm text-ink-2">
-              {t('cta.from')} <a href={localePath(lang, `/cars/${entry.car.id}`)} class="font-bold text-ink no-underline hover:text-signal transition-colors">{entry.car.data.brand} {entry.car.data.model}</a>
+            <p class="mt-2">
+              <a href={localePath(lang, `/cars/${entry.car.id}`)} class="text-sm font-bold no-underline hover:text-signal transition-colors">{entry.car.data.brand} {entry.car.data.model}</a>
             </p>
           )}
 
@@ -98,8 +96,7 @@ const terms = [
         </ul>
 
         <div class="mt-8 pt-7 border-t border-line">
-          <p class="text-sm text-ink-2 leading-relaxed max-w-[38ch]">{t('calc.note')}</p>
-          <div class="mt-5 flex flex-wrap gap-3">
+          <div class="flex flex-wrap gap-3">
             <a href={`tel:${tel}`} class="pill pill-primary">
               <Icon name="phone" size={15} />{t('cta.call')}
             </a>

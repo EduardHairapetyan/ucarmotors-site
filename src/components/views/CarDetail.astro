@@ -22,9 +22,9 @@ const blurb = pick(d.description, lang);
 const tel = site.phones[0].replace(/[^+\d]/g, '');
 
 const facts = [
-  d.rangeKm && { label: t('car.range'), value: `${d.rangeKm} km` },
-  d.batteryKwh && { label: t('car.battery'), value: `${d.batteryKwh} kWh` },
-  d.powerHp && { label: t('car.power'), value: `${d.powerHp} hp` },
+  d.rangeKm && { label: t('car.range'), value: `${d.rangeKm} ${t('unit.km')}` },
+  d.batteryKwh && { label: t('car.battery'), value: `${d.batteryKwh} ${t('unit.kwh')}` },
+  d.powerHp && { label: t('car.power'), value: `${d.powerHp} ${t('unit.hp')}` },
   d.drivetrain && { label: t('car.drivetrain'), value: d.drivetrain.toUpperCase() },
 ].filter(Boolean) as { label: string; value: string }[];
 
@@ -151,7 +151,6 @@ const breadcrumbs = {
           ) : (
             <>
               <p class="text-lg font-extrabold tracking-[-0.03em]">{t('car.onRequest')}</p>
-              <p class="mt-2 text-sm text-ink-2 leading-relaxed max-w-[38ch]">{t('calc.note')}</p>
             </>
           )}
         </div>

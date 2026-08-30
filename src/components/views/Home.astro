@@ -86,7 +86,7 @@ const mapSrc = mapBase.includes('hl=') ? mapBase : `${mapBase}&hl=${lang}`;
               </p>
               <p class:list={['status mt-1.5', heroCar.data.status === 'available' && 'status-available']}>
                 {t(`status.${heroCar.data.status}` as 'status.available')}
-                {heroCar.data.rangeKm && <span class="text-ink-2 font-semibold">· {heroCar.data.rangeKm} km</span>}
+                {heroCar.data.rangeKm && <span class="text-ink-2 font-semibold">· {heroCar.data.rangeKm} {t('unit.km')}</span>}
               </p>
             </div>
 
@@ -154,11 +154,11 @@ const mapSrc = mapBase.includes('hl=') ? mapBase : `${mapBase}&hl=${lang}`;
 
         <dl class="mt-auto pt-8 grid grid-cols-3 gap-4">
           <div>
-            <dt class="label capitalize">{t('cars.count')}</dt>
+            <dt class="label">{t('cars.title')}</dt>
             <dd class="payment text-2xl mt-1">{cars.length}</dd>
           </div>
           <div>
-            <dt class="label capitalize">{t('calc.rate')}</dt>
+            <dt class="label">{t('calc.rate')}</dt>
             <dd class="payment text-2xl mt-1">{f.ratePercent}%</dd>
           </div>
           <div>

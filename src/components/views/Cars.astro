@@ -27,11 +27,11 @@ const brands = brandsOf(cars);
         </div>
         <dl class="flex gap-8">
           <div>
-            <dt class="label capitalize">{t('cars.count')}</dt>
+            <dt class="label">{t('cars.title')}</dt>
             <dd class="payment text-2xl mt-1"><span data-count>{cars.length}</span></dd>
           </div>
           <div>
-            <dt class="label capitalize">{t('calc.rate')}</dt>
+            <dt class="label">{t('calc.rate')}</dt>
             <dd class="payment text-2xl mt-1">{site.financing.ratePercent}%</dd>
           </div>
           <div>
@@ -75,7 +75,6 @@ const brands = brandsOf(cars);
     <div class="card p-8 sm:p-10 flex flex-wrap items-center justify-between gap-6">
       <div>
         <h2 class="text-xl font-extrabold tracking-[-0.03em]">{t('car.onRequest')}</h2>
-        <p class="mt-2 text-ink-2 max-w-[42ch] leading-relaxed">{t('calc.note')}</p>
       </div>
       <div class="flex flex-wrap gap-3">
         <a href={`tel:${site.phones[0].replace(/[^+\d]/g, '')}`} class="pill pill-primary">

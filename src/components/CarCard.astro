@@ -85,9 +85,9 @@ const tel = site.phones[0].replace(/[^+\d]/g, '');
       <div>
         <div class="flex items-baseline justify-between gap-2">
           <span class="text-xs font-bold text-ink-2">{t('car.range')}</span>
-          <span class="font-data text-xs font-bold">{d.rangeKm} km</span>
+          <span class="font-data text-xs font-bold">{d.rangeKm} {t('unit.km')}</span>
         </div>
-        <div class="rangebar mt-1.5" title={`${d.rangeKm} km`}>
+        <div class="rangebar mt-1.5" title={`${d.rangeKm} ${t('unit.km')}`}>
           <i style={`width:${rangePct}%`}></i>
         </div>
       </div>
