@@ -13,9 +13,15 @@ interface Props {
   description: string;
   /** Extra JSON-LD to merge into the page graph — one node or several. */
   schema?: Record<string, unknown> | Record<string, unknown>[];
+  /**
+   * Pages that exist at every URL rather than at one — the 404. They get no
+   * canonical and no hreflang, because there is no `/ru/404` or `/en/404` to
+   * point at and advertising them sends crawlers to dead addresses.
+   */
+  noindex?: boolean;
 }
 
-const { lang, title, description, schema } = Astro.props;
+const { lang, title, description, schema, noindex = false } = Astro.props;
 const t = useTranslations(lang);
 const site = (await getEntry('settings', 'site'))!.data;
 
@@ -55,21 +61,21 @@ const graph = { '@context': 'https://schema.org', '@graph': [dealer, ...extra] }
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
+    {noindex ? <meta name="robots" content="noindex, follow" /> : <link rel="canonical" href={canonical} />}
     <meta name="theme-color" content="#F4F5FB" />
     <link rel="icon" href={asset('/favicon.svg')} type="image/svg+xml" />
     <script is:inline>document.documentElement.classList.add('js');</script>
 
-    {locales.map((code) => (
+    {!noindex && locales.map((code) => (
       <link rel="alternate" hreflang={htmlLang[code]} href={new URL(localePath(code, bare), Astro.site).href} />
     ))}
-    <link rel="alternate" hreflang="x-default" href={new URL(localePath('hy', bare), Astro.site).href} />
+    {!noindex && <link rel="alternate" hreflang="x-default" href={new URL(localePath('hy', bare), Astro.site).href} />}
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Ucar Motors" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
+    {!noindex && <meta property="og:url" content={canonical} />}
     <meta property="og:locale" content={htmlLang[lang].replace('-', '_')} />
     <meta name="twitter:card" content="summary_large_image" />
 
@@ -83,7 +89,7 @@ const graph = { '@context': 'https://schema.org', '@graph': [dealer, ...extra] }
       class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-3 focus:px-4 focus:py-2 focus:bg-signal focus:text-white"
     >{t('skip')}</a>
 
-    <Header lang={lang} />
+    <Header lang={lang} langTarget={noindex ? '/' : undefined} />
     <main id="main" class="flex-1"><slot /></main>
     <Footer lang={lang} />
     <MobileActionBar lang={lang} />

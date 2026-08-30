@@ -1,0 +1,51 @@
+---
+/**
+ * `/hy/...` → the prefixless Armenian URL.
+ *
+ * Armenian is the default locale and `prefixDefaultLocale` is false, so the
+ * canonical Armenian URLs carry no prefix: `/cars`, not `/hy/cars`. But the
+ * language switcher shows "HY" beside RU and EN, and the other two locales
+ * *are* prefixed — so `/hy/cars` is the obvious thing for a person to type,
+ * and for anyone hand-editing a shared link to arrive at. Without these it is
+ * a dead end.
+ *
+ * Static output, so the redirect is a meta refresh plus `location.replace`
+ * (which does not add a history entry, so Back still leaves the site), with a
+ * real link as the no-script fallback. `canonical` points at the real page
+ * and the pages are `noindex`, so nothing here competes in search.
+ */
+import { getCars } from '../../lib/catalog';
+import { localePath, useTranslations } from '../../i18n/utils';
+import { htmlLang } from '../../i18n/ui';
+
+export async function getStaticPaths() {
+  const cars = await getCars();
+  const routes = ['', 'cars', 'financing', 'contact', ...cars.map((c) => `cars/${c.id}`)];
+  return routes.map((r) => ({
+    // `undefined` gives `/hy/` itself; anything else gives `/hy/<route>`.
+    params: { path: r || undefined },
+    props: { route: `/${r}` },
+  }));
+}
+
+const { route } = Astro.props;
+const t = useTranslations('hy');
+const to = localePath('hy', route);
+const canonical = new URL(to, Astro.site).href;
+---
+
+<!doctype html>
+<html lang={htmlLang.hy}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, follow" />
+    <link rel="canonical" href={canonical} />
+    <meta http-equiv="refresh" content={`0; url=${to}`} />
+    <title>Ucar Motors</title>
+    <script is:inline set:html={`location.replace(${JSON.stringify(to)});`} />
+  </head>
+  <body>
+    <a href={to}>{t('skip')}</a>
+  </body>
+</html>

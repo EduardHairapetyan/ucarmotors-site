@@ -20,7 +20,15 @@ export default defineConfig({
     locales: ['hy', 'ru', 'en'],
     routing: { prefixDefaultLocale: false },
   },
-  integrations: [sitemap({ i18n: { defaultLocale: 'hy', locales: { hy: 'hy-AM', ru: 'ru-RU', en: 'en' } } })],
+  integrations: [
+    sitemap({
+      // `/hy/*` exists only to redirect to the prefixless Armenian URLs
+      // (see src/pages/hy/[...path].astro). Those pages are noindex; listing
+      // them would offer search engines a second address for every page.
+      filter: (page) => !/\/hy(\/|$)/.test(page),
+      i18n: { defaultLocale: 'hy', locales: { hy: 'hy-AM', ru: 'ru-RU', en: 'en' } },
+    }),
+  ],
   vite: { plugins: [tailwindcss()] },
   build: { inlineStylesheets: 'auto' },
 });

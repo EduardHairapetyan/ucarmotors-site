@@ -15,13 +15,23 @@ import Icon from './Icon.astro';
 import Logo from './Logo.astro';
 import Flag from './Flag.astro';
 
-interface Props { lang: Lang }
-const { lang } = Astro.props;
+interface Props {
+  lang: Lang;
+  /**
+   * Where the language switcher should send you, overriding "the same page in
+   * the other language". The 404 is served at every unknown URL, so there is
+   * no equivalent page to switch to — without this, changing language on a
+   * 404 lands you on another 404.
+   */
+  langTarget?: string;
+}
+const { lang, langTarget } = Astro.props;
 const t = useTranslations(lang);
 const site = (await getEntry('settings', 'site'))!.data;
 const tel = site.phones[0].replace(/[^+\d]/g, '');
 
 const here = stripLocale(Astro.url.pathname).replace(/\/$/, '') || '/';
+const switchTo = langTarget ?? here;
 const nav = [
   { href: '/cars', label: t('nav.cars') },
   { href: '/financing', label: t('nav.financing') },
@@ -68,7 +78,7 @@ const isOn = (href: string) => here === href || here.startsWith(href + '/');
             {locales.map((code) => (
               <li>
                 <a
-                  href={localePath(code, here)}
+                  href={localePath(code, switchTo)}
                   hreflang={code}
                   lang={code}
                   aria-current={code === lang ? 'true' : undefined}
