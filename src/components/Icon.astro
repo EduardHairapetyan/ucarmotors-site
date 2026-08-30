@@ -9,7 +9,7 @@ interface Props {
     | 'facebook' | 'instagram' | 'linkedin' | 'whatsapp' | 'telegram'
     | 'globe' | 'chevron-down' | 'phone' | 'mail' | 'map-pin' | 'external'
     | 'menu' | 'close' | 'arrow-right' | 'check' | 'clock'
-    | 'car' | 'bolt' | 'shield' | 'wrench' | 'card';
+    | 'car' | 'truck' | 'bolt' | 'shield' | 'wrench' | 'card';
   size?: number;
   class?: string;
 }
@@ -19,7 +19,7 @@ const { name, size = 20, class: className = '' } = Astro.props;
 const OUTLINE = new Set([
   'instagram', 'globe', 'chevron-down', 'phone', 'mail', 'map-pin', 'external',
   'menu', 'close', 'arrow-right', 'check', 'clock',
-  'car', 'bolt', 'shield', 'wrench', 'card',
+  'car', 'truck', 'bolt', 'shield', 'wrench', 'card',
 ]);
 const outline = OUTLINE.has(name);
 
@@ -52,6 +52,8 @@ const PATHS: Record<Props['name'], string> = {
   car:
     '<path d="M4 16.5v2.2a.8.8 0 0 1-.8.8H2.8a.8.8 0 0 1-.8-.8V11l2.4-5.4A2 2 0 0 1 6.2 4.4h11.6a2 2 0 0 1 1.8 1.2L22 11v7.7a.8.8 0 0 1-.8.8h-.4a.8.8 0 0 1-.8-.8v-2.2"/><path d="M2 11h20"/><circle cx="7" cy="14" r="1.3"/><circle cx="17" cy="14" r="1.3"/>',
   bolt: '<path d="M13.5 2.5 5 13.5h5.5L9.8 21.5 18.5 10h-5.6z"/>',
+  truck:
+    '<path d="M2.5 6.2h10.3v9.6H2.5z"/><path d="M12.8 9.6h3.4a2 2 0 0 1 1.7.9l2 3.2v2.1h-7.1z"/><circle cx="7" cy="17.8" r="1.8"/><circle cx="16.6" cy="17.8" r="1.8"/><path d="M8.8 17.8h6"/>',
   shield: '<path d="M12 2.5 20 6v6c0 5-3.4 8.3-8 9.5C7.4 20.3 4 17 4 12V6z"/><path d="m9 12 2.2 2.2L15.5 10"/>',
   wrench:
     '<path d="M15.2 3.4a5.5 5.5 0 0 0-6.6 7.1L3 16.1a2 2 0 0 0 0 2.8l2.1 2.1a2 2 0 0 0 2.8 0l5.6-5.6a5.5 5.5 0 0 0 7.1-6.6l-3.1 3.1-3-.4-.4-3z"/>',

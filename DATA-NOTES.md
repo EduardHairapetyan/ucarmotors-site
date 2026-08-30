@@ -35,9 +35,29 @@ confirms they sell it. A wrong price on a 10-million-dram car is not.
 | Instagram | **@ucar__motors** — two underscores | mycar.am |
 | LinkedIn | linkedin.com/company/ucar-motors | direct |
 | Services | EV sales, charging stations, warranty, service, financing | their own Armenian FB tagline |
+| Telegram | **t.me/ucararmenia** | the link in their Instagram bio |
+| Slogan | **Արի Ucar՝ երազանքիդ ետևից** | their Instagram bio |
+| Electric trucks | a separate line, run from **@u__cargo** | their Instagram bio |
+| Category | Автосалон (car dealership) | Instagram profile category |
+| Instagram reach | 438 posts, ~4,160 followers | Instagram profile, 2026-08-30 |
 
 `@ucarmotors` (one underscore) is an unrelated motorcycle dealer in Istanbul.
 Do not link it.
+
+Added 2026-08-30 from a screenshot of the Instagram profile supplied by the
+client. Two caveats on what the site now shows:
+
+- The slogan is **theirs in Armenian only**. The Russian ("Приезжай в Ucar —
+  за своей мечтой") and English ("Come to Ucar — go after your dream") lines
+  in `src/i18n/ui.ts` are renderings of it, not supplied copy, and want a
+  native read before launch.
+- The trucks card on the home page links out to `@u__cargo` rather than into
+  the catalogue, because no truck exists in `src/content/cars/`. If Ucar want
+  trucks sold on this site, they become catalogue records and the card should
+  point at a filtered view instead.
+
+Their Instagram story highlights name **BYD, Changan, Mazda, Zeekr** as brand
+lines. Changan is already represented (the Deepal S07 is a Changan marque).
 
 ## Prices — verified, 3 cars
 

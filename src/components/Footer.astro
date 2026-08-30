@@ -22,8 +22,9 @@ const nav = [
 const social = [
   { href: site.social.facebook, name: 'facebook' as const, label: 'Facebook' },
   { href: site.social.instagram, name: 'instagram' as const, label: 'Instagram' },
+  { href: site.social.telegram, name: 'telegram' as const, label: 'Telegram' },
   { href: site.social.linkedin, name: 'linkedin' as const, label: 'LinkedIn' },
-];
+].filter((s): s is { href: string; name: typeof s.name; label: string } => Boolean(s.href));
 ---
 
 <footer class="px-3 pb-3 mt-16 sm:mt-24">

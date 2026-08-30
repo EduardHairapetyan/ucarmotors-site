@@ -62,7 +62,13 @@ const settings = defineCollection({
      *  pin the showroom exactly. When null the Contact page falls back to a
      *  keyword search embed built from `address`. */
     mapEmbed: z.string().url().or(z.literal('')).nullable().default(null),
-    social: z.object({ facebook: z.string().url(), instagram: z.string().url(), linkedin: z.string().url() }),
+    social: z.object({
+      facebook: z.string().url(),
+      instagram: z.string().url(),
+      linkedin: z.string().url(),
+      /** Optional: the channel Ucar link from their own Instagram bio. */
+      telegram: z.string().url().or(z.literal('')).nullable().default(null),
+    }),
     financing: z.object({
       ratePercent: z.number().positive(),
       minDownPercent: z.number().int().min(0).max(90),

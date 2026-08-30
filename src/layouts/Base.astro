@@ -47,7 +47,7 @@ const dealer = {
     addressRegion: 'Kotayk',
     addressCountry: 'AM',
   },
-  sameAs: [site.social.facebook, site.social.instagram, site.social.linkedin],
+  sameAs: [site.social.facebook, site.social.instagram, site.social.linkedin, site.social.telegram].filter(Boolean),
 };
 
 const extra = schema ? (Array.isArray(schema) ? schema : [schema]) : [];

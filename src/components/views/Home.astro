@@ -32,6 +32,9 @@ const services = [
   { icon: 'shield' as const, label: t('svc.warranty') },
   { icon: 'wrench' as const, label: t('svc.service') },
   { icon: 'card' as const, label: t('svc.financing') },
+  // Ucar handle electric trucks through a separate account, so this one card
+  // leaves the site rather than pretending the catalogue covers them.
+  { icon: 'truck' as const, label: t('svc.trucks'), href: 'https://www.instagram.com/u__cargo' },
 ];
 
 // Prefer the exact pin pasted in the CMS; otherwise geocode the street
@@ -52,7 +55,7 @@ const mapSrc = mapBase.includes('hl=') ? mapBase : `${mapBase}&hl=${lang}`;
 
     <div class="shell relative pt-10 pb-2 sm:pt-16 text-center">
       <p class="rise inline-flex items-center gap-2 pill pill-soft pill-sm !font-bold">
-        <Icon name="bolt" size={14} />{t('hero.eyebrow')}
+        <Icon name="bolt" size={14} />{t('brand.slogan')}
       </p>
 
       <h1 class="rise text-hero mt-6 max-w-[17ch] mx-auto" style="--d:70ms">{t('hero.title')}</h1>
@@ -110,15 +113,23 @@ const mapSrc = mapBase.includes('hl=') ? mapBase : `${mapBase}&hl=${lang}`;
 
   <!-- What the showroom does, from its own service list. -->
   <section class="shell pt-16 sm:pt-24" data-reveal>
-    <ul class="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-5 list-none p-0">
+    <ul class="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-6 list-none p-0">
       {services.map((s, i) => (
-        <li
-          class="card card-hover p-5 flex flex-col gap-3"
-          data-reveal
-          style={`--reveal-delay:${i * 60}ms`}
-        >
-          <span class="badge"><Icon name={s.icon} size={17} /></span>
-          <span class="text-sm font-bold leading-snug">{s.label}</span>
+        <li data-reveal style={`--reveal-delay:${i * 60}ms`}>
+          {s.href ? (
+            <a href={s.href} rel="noopener" class="card card-hover p-5 h-full flex flex-col gap-3 no-underline">
+              <span class="badge"><Icon name={s.icon} size={17} /></span>
+              <span class="text-sm font-bold leading-snug">{s.label}</span>
+              <span class="mt-auto pt-1 text-xs font-bold text-signal inline-flex items-center gap-1">
+                @u__cargo<Icon name="external" size={12} />
+              </span>
+            </a>
+          ) : (
+            <div class="card p-5 h-full flex flex-col gap-3">
+              <span class="badge"><Icon name={s.icon} size={17} /></span>
+              <span class="text-sm font-bold leading-snug">{s.label}</span>
+            </div>
+          )}
         </li>
       ))}
     </ul>

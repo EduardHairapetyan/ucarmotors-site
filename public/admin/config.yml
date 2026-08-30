@@ -135,6 +135,7 @@ collections:
               - { name: facebook, label: Facebook, widget: string }
               - { name: instagram, label: Instagram, widget: string }
               - { name: linkedin, label: LinkedIn, widget: string }
+              - { name: telegram, label: Telegram, widget: string, required: false }
           - name: financing
             label: Վարկային պայմաններ
             widget: object
