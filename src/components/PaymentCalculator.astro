@@ -55,17 +55,11 @@ const big = size === 'lg';
     data-years={t('calc.years')}
     class="block"
   >
-    <div class:list={['flex items-baseline gap-2 flex-wrap', big ? 'mb-6' : 'mb-4']}>
-      <output
-        for={`${id}-down ${id}-term`}
-        data-payment
-        class:list={['payment text-ink', big ? 'text-[clamp(2.5rem,7vw,3.5rem)]' : 'text-3xl']}
-        set:text={formatAmd(initial, lang)}
-      />
-      <span
-        class:list={['font-bold text-ink-2', big ? 'text-base' : 'text-sm']}
-        set:text={t('calc.perMonth')}
-      />
+    <!-- Just the figure: the "Monthly payment" label sits directly above every
+         instance of this component, so the readout does not repeat it. -->
+    <div class:list={['figure text-ink', big ? 'mb-6 text-[clamp(2.25rem,6.5vw,3.25rem)]' : 'mb-4 text-3xl']}>
+      <output for={`${id}-down ${id}-term`} data-payment class="payment" set:text={formatAmd(initial, lang)} />
+      <span class="unit">֏</span>
     </div>
 
     <div class:list={['grid gap-5', big ? 'sm:grid-cols-2' : '']}>

@@ -140,6 +140,28 @@
     font-feature-settings: "zero" 1;
   }
 
+  /* A figure and the unit trailing it — a currency sign, a "%", or a word
+     like "տարի". The wrapper carries the size (a Tailwind text-* class), the
+     number is `.payment`, and `.unit` is set as a fixed fraction of that so
+     the two stay in proportion at any scale, in the sans face at its natural
+     tracking — `.payment`'s −0.05em mangles an Armenian word — and pulled in
+     close so the pair reads as one value rather than a number with a label
+     drifting off its baseline. */
+  .figure { display: inline-flex; align-items: baseline; gap: 0.18em; white-space: nowrap; }
+  .figure > .payment { font-size: 1em; }
+  .unit {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    letter-spacing: normal;
+    font-size: 0.66em;
+    color: var(--color-ink-2);
+    /* Lift the smaller unit off the number's baseline toward its optical
+       centre — baseline-locked, it reads as a footnote dangling under the
+       figure rather than part of it. Also corrects the Noto Armenian ֏,
+       whose baseline sits lower than the mono digits beside it. */
+    transform: translateY(-0.1em);
+  }
+
   /* ---- surfaces ------------------------------------------------------ */
 
   .card {
@@ -207,7 +229,6 @@
   .pill-soft { background: var(--color-signal-3); color: var(--color-signal); }
   .pill-soft:hover { background: #E4DBFD; }
   .pill-money { background: var(--color-mist); color: var(--color-ink); }
-  .pill-money b { font-family: var(--font-data); font-weight: 700; letter-spacing: -0.04em; }
   .pill-sm { min-height: 2.25rem; padding: 0 1rem; font-size: 0.875rem; }
 
   /* Circular icon badge — the device from the client's own artwork. */

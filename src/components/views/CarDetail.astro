@@ -139,9 +139,7 @@ const breadcrumbs = {
           {price !== null ? (
             <>
               <p class="label">{t('car.price')}</p>
-              <p class="payment text-4xl sm:text-5xl mt-2">
-                {formatAmd(price, lang)}<span class="text-xl text-ink-2 font-bold"> ֏</span>
-              </p>
+              <p class="figure text-4xl sm:text-5xl mt-2"><span class="payment">{formatAmd(price, lang)}</span><span class="unit">֏</span></p>
 
               <div class="mt-7 pt-6 border-t border-line">
                 <p class="label mb-4">{t('calc.title')}</p>
@@ -151,6 +149,7 @@ const breadcrumbs = {
           ) : (
             <>
               <p class="text-lg font-extrabold tracking-[-0.03em]">{t('car.onRequest')}</p>
+              <p class="mt-2 text-sm text-ink-2 leading-relaxed max-w-[36ch]">{t('car.onRequestNote')}</p>
             </>
           )}
         </div>

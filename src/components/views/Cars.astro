@@ -36,10 +36,7 @@ const brands = brandsOf(cars);
           </div>
           <div>
             <dt class="label">{t('calc.term')}</dt>
-            <dd class="payment text-2xl mt-1 whitespace-nowrap">
-              {site.financing.maxTermYears}
-              <span class="font-sans text-base font-bold text-ink-2">{t('calc.years')}</span>
-            </dd>
+            <dd class="figure text-2xl mt-1"><span class="payment">{site.financing.maxTermYears}</span><span class="unit">{t('calc.years')}</span></dd>
           </div>
         </dl>
       </div>

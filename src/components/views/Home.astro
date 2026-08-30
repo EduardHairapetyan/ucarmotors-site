@@ -95,8 +95,7 @@ const mapSrc = mapBase.includes('hl=') ? mapBase : `${mapBase}&hl=${lang}`;
 
             {heroPrice !== null ? (
               <span class="pill pill-money">
-                <b>{formatAmd(heroPrice, lang)}</b>
-                <span class="text-ink-2 font-semibold">֏</span>
+                <span class="figure"><span class="payment">{formatAmd(heroPrice, lang)}</span><span class="unit">֏</span></span>
               </span>
             ) : (
               <a href={`tel:${tel}`} class="pill pill-primary">{t('cta.call')}</a>
@@ -111,27 +110,29 @@ const mapSrc = mapBase.includes('hl=') ? mapBase : `${mapBase}&hl=${lang}`;
     </div>
   </section>
 
-  <!-- What the showroom does, from its own service list. -->
+  <!-- What the showroom does, from its own service list. Badge pinned to the
+       top, label to the bottom, so a one-line and a two-line card share the
+       same rhythm across the row. The trucks card is the one that navigates
+       away (to Ucar's separate account) — marked with a trailing ↗. -->
   <section class="shell pt-16 sm:pt-24" data-reveal>
     <ul class="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-6 list-none p-0">
-      {services.map((s, i) => (
-        <li data-reveal style={`--reveal-delay:${i * 60}ms`}>
-          {s.href ? (
-            <a href={s.href} rel="noopener" class="card card-hover p-5 h-full flex flex-col gap-3 no-underline">
+      {services.map((s, i) => {
+        const Tag = s.href ? 'a' : 'div';
+        return (
+          <li data-reveal style={`--reveal-delay:${i * 60}ms`}>
+            <Tag
+              {...(s.href ? { href: s.href, rel: 'noopener' } : {})}
+              class:list={['card h-full p-5 flex flex-col justify-between gap-6 no-underline', s.href && 'card-hover']}
+            >
               <span class="badge"><Icon name={s.icon} size={17} /></span>
-              <span class="text-sm font-bold leading-snug">{s.label}</span>
-              <span class="mt-auto pt-1 text-xs font-bold text-signal inline-flex items-center gap-1">
-                @u__cargo<Icon name="external" size={12} />
+              <span class="text-sm font-bold leading-snug inline-flex items-start gap-1">
+                {s.label}
+                {s.href && <Icon name="external" size={12} class="mt-0.5 shrink-0 text-ink-2" />}
               </span>
-            </a>
-          ) : (
-            <div class="card p-5 h-full flex flex-col gap-3">
-              <span class="badge"><Icon name={s.icon} size={17} /></span>
-              <span class="text-sm font-bold leading-snug">{s.label}</span>
-            </div>
-          )}
-        </li>
-      ))}
+            </Tag>
+          </li>
+        );
+      })}
     </ul>
   </section>
 
@@ -174,7 +175,7 @@ const mapSrc = mapBase.includes('hl=') ? mapBase : `${mapBase}&hl=${lang}`;
           </div>
           <div>
             <dt class="label">{t('calc.term')}</dt>
-            <dd class="payment text-2xl mt-1 whitespace-nowrap">{f.maxTermYears} <span class="text-base font-sans font-bold text-ink-2">{t('calc.years')}</span></dd>
+            <dd class="figure text-2xl mt-1"><span class="payment">{f.maxTermYears}</span><span class="unit">{t('calc.years')}</span></dd>
           </div>
         </dl>
       </div>

@@ -25,7 +25,7 @@ const DOCS: Record<Lang, string[]> = {
 const terms = [
   { label: t('calc.rate'), value: `${f.ratePercent}%` },
   { label: t('calc.down'), value: `${f.minDownPercent}–${f.maxDownPercent}%` },
-  { label: t('calc.term'), value: `${f.minTermYears}–${f.maxTermYears} ${t('calc.years')}` },
+  { label: t('calc.term'), value: `${f.minTermYears}–${f.maxTermYears}`, unit: t('calc.years') },
 ];
 ---
 
@@ -41,7 +41,7 @@ const terms = [
           {terms.map((x) => (
             <div>
               <dt class="label">{x.label}</dt>
-              <dd class="payment text-2xl mt-1">{x.value}</dd>
+              <dd class="figure text-2xl mt-1"><span class="payment">{x.value}</span>{x.unit && <span class="unit">{x.unit}</span>}</dd>
             </div>
           ))}
         </dl>
@@ -54,9 +54,10 @@ const terms = [
        until `financing.verified` is set in the CMS. -->
   {!f.verified && (
     <section class="shell pb-2">
-      <p class="rounded-[14px] bg-white p-4 pl-5 border-l-[3px] border-danger text-sm text-ink-2 max-w-[62ch] leading-relaxed shadow-[var(--shadow-lift)]">
-        {t('fin.unverified')}
-      </p>
+      <div class="card p-5 border-l-[3px] border-l-danger flex items-start gap-3">
+        <span class="text-danger shrink-0 mt-0.5"><Icon name="clock" size={18} /></span>
+        <p class="text-sm text-ink-2 leading-relaxed max-w-[64ch]">{t('fin.unverified')}</p>
+      </div>
     </section>
   )}
 
@@ -67,12 +68,12 @@ const terms = [
         <div class="relative">
           <p class="label">{t('calc.title')}</p>
           {entry && (
-            <p class="mt-2">
+            <p class="mt-1">
               <a href={localePath(lang, `/cars/${entry.car.id}`)} class="text-sm font-bold no-underline hover:text-signal transition-colors">{entry.car.data.brand} {entry.car.data.model}</a>
             </p>
           )}
 
-          <div class="mt-7">
+          <div class="mt-5">
             <PaymentCalculator price={entry?.price ?? null} financing={f} lang={lang} size="lg" tone="light" id="fin" />
           </div>
 
@@ -86,11 +87,11 @@ const terms = [
         <h2 class="text-xl font-extrabold tracking-[-0.03em]">{t('fin.docs')}</h2>
         <!-- A checklist, not a sequence: these are four things to bring, and
              numbering them would imply an order that does not exist. -->
-        <ul class="mt-6 space-y-3 list-none p-0">
+        <ul class="mt-6 space-y-2.5 list-none p-0">
           {DOCS[lang].map((doc) => (
-            <li class="flex items-start gap-3">
-              <span class="badge !w-6 !h-6 mt-px"><Icon name="check" size={13} /></span>
-              <span class="text-[0.9375rem] leading-snug">{doc}</span>
+            <li class="flex items-center gap-3">
+              <span class="badge !w-6 !h-6 shrink-0"><Icon name="check" size={13} /></span>
+              <span class="text-[0.9375rem]">{doc}</span>
             </li>
           ))}
         </ul>

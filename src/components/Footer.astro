@@ -2,6 +2,11 @@
 /**
  * Footer as one card, matching the header. Display-only contact — this site
  * has no enquiry form of any kind, by the client's instruction.
+ *
+ * Four columns, each a `.label` heading over a left-aligned stack. No leading
+ * icons on the text lines: an icon in front of one line and not the next
+ * breaks the column's left edge, which is exactly the misalignment this file
+ * is meant to avoid.
  */
 import { getEntry } from 'astro:content';
 import { localePath, useTranslations, pick, type Lang } from '../i18n/utils';
@@ -25,12 +30,15 @@ const social = [
   { href: site.social.telegram, name: 'telegram' as const, label: 'Telegram' },
   { href: site.social.linkedin, name: 'linkedin' as const, label: 'LinkedIn' },
 ].filter((s): s is { href: string; name: typeof s.name; label: string } => Boolean(s.href));
+
+const link = 'text-sm font-semibold no-underline text-ink-2 hover:text-signal transition-colors';
+const linkAccent = 'text-sm font-semibold no-underline text-signal hover:text-signal-2 transition-colors';
 ---
 
 <footer class="px-3 pb-3 mt-16 sm:mt-24">
   <div class="shell !px-0">
     <div class="card p-7 sm:p-10">
-      <div class="grid gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1.1fr]">
+      <div class="grid gap-10 lg:grid-cols-[1.5fr_1fr_1.1fr_1.3fr]">
         <div>
           <div class="flex items-center gap-2.5">
             <Logo size={26} />
@@ -39,7 +47,7 @@ const social = [
               <span class="font-bold text-ink-2">MOTORS</span>
             </span>
           </div>
-          <p class="mt-4 text-sm leading-relaxed text-ink-2 max-w-[32ch]">{t('hero.lede')}</p>
+          <p class="mt-4 text-sm leading-relaxed text-ink-2 max-w-[34ch]">{t('brand.slogan')}</p>
           <div class="mt-5 flex gap-2">
             {social.map((s) => (
               <a
@@ -54,43 +62,34 @@ const social = [
           </div>
         </div>
 
-        <nav aria-label="Footer">
-          <ul class="space-y-2 list-none p-0">
+        <nav aria-label={t('footer.sections')}>
+          <p class="label">{t('footer.sections')}</p>
+          <ul class="mt-3 space-y-2 list-none p-0">
             {nav.map((item) => (
               <li>
-                <a href={localePath(lang, item.href)} class="text-sm font-semibold no-underline text-ink-2 hover:text-signal transition-colors">
-                  {item.label}
-                </a>
+                <a href={localePath(lang, item.href)} class={link}>{item.label}</a>
               </li>
             ))}
           </ul>
         </nav>
 
         <div>
-          <p class="label">{t('contact.phone')}</p>
+          <p class="label">{t('nav.contact')}</p>
           <ul class="mt-3 space-y-2 list-none p-0">
             {site.phones.map((p) => (
-              <li>
-                <a href={`tel:${p.replace(/[^+\d]/g, '')}`} class="text-sm font-semibold no-underline text-ink-2 hover:text-signal transition-colors">{p}</a>
-              </li>
+              <li><a href={`tel:${p.replace(/[^+\d]/g, '')}`} class={`font-data ${link}`}>{p}</a></li>
             ))}
+            <li><a href={`https://wa.me/${site.whatsapp}`} rel="noopener" class={linkAccent}>WhatsApp</a></li>
+            <li><a href={`mailto:${site.email}`} class={link}>{site.email}</a></li>
           </ul>
-          <a href={`https://wa.me/${site.whatsapp}`} rel="noopener" class="inline-flex items-center gap-2 mt-3 text-sm font-semibold no-underline text-signal">
-            <Icon name="whatsapp" size={15} />WhatsApp
-          </a>
-          <p class="mt-3">
-            <a href={`mailto:${site.email}`} class="text-sm font-semibold no-underline text-ink-2 hover:text-signal transition-colors">{site.email}</a>
-          </p>
         </div>
 
         <div>
           <p class="label">{t('contact.address')}</p>
           <p class="mt-3 text-sm leading-relaxed text-ink-2">{pick(site.address, lang)}</p>
-          <p class="mt-2 inline-flex items-center gap-2 text-sm text-ink-2">
-            <Icon name="clock" size={15} class="text-dim" />{pick(site.hours, lang)}
-          </p>
-          <a href={site.mapUrl} rel="noopener" class="inline-flex items-center gap-2 mt-3 text-sm font-semibold no-underline text-signal">
-            <Icon name="map-pin" size={15} />{t('contact.map')}
+          <p class="mt-2 text-sm text-ink-2">{pick(site.hours, lang)}</p>
+          <a href={site.mapUrl} rel="noopener" class={`inline-flex items-center gap-1.5 mt-3 ${linkAccent}`}>
+            {t('contact.map')}<Icon name="external" size={13} />
           </a>
         </div>
       </div>

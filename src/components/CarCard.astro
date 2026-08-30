@@ -98,8 +98,7 @@ const tel = site.phones[0].replace(/[^+\d]/g, '');
     <div class="mt-auto pt-4">
       {price !== null ? (
         <a href={href} class="pill pill-money w-full">
-          <b>{formatAmd(price, lang)}</b>
-          <span class="text-ink-2 font-semibold">֏</span>
+          <span class="figure"><span class="payment">{formatAmd(price, lang)}</span><span class="unit">֏</span></span>
         </a>
       ) : (
         <a href={`tel:${tel}`} class="pill pill-primary w-full">
